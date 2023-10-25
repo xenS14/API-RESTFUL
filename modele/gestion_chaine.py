@@ -74,9 +74,3 @@ extract_data(chaine)
 # RSSI
 "45"
 #06182660000E1300B7FF3D010637C40D0"""
-
-"""temp = chaine[100:104]
-humid = chaine[104:106]
-print(temp, humid)
-print("Température = " + str(int(temp, 16)))
-print("Humidité = " + str(int(humid, 16)))"""
