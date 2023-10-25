@@ -45,6 +45,10 @@ class alerte:
         self.idUser = idUser
         self.idReleve = idReleve
 
+    def get_alerte():
+        req = "SELECT * FROm alerte WHERE id = {self.id}"
+        return req
+
     def ajout_alerte():
         req = "INSERT INTO alerte (niv, operateur, type, actif, idUser, idReleve) VALUES ({self.niv}, {self.operateur}, {self.type}, {self.actif}, {self.idUser}, {self.idReleve})"
         return req
