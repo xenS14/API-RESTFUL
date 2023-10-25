@@ -1,6 +1,7 @@
 from flask import Flask
 from flask_restful import Resource, Api, reqparse
 
+
 app = Flask(__name__)
 api = Api(app)
 
@@ -10,7 +11,7 @@ releves = [
      "date": "Thu, 25 Nov 2021 12:04:00 GMT"}
 ]
 
-sonde = []
+sondes = []
 
 
 class Releve(Resource):
@@ -38,26 +39,6 @@ class Releve(Resource):
         releves.append(releve)
         return releve, 201
 
-    def put(self, id):
-        parser = reqparse.RequestParser()
-        parser.add_argument("ch")
-        parser.add_argument("date")
-        args = parser.parse_args()
-
-        for releve in releves:
-            if (id == releve["id"]):
-                releve["ch"] = args["ch"]
-                releve["date"] = args["date"]
-                return releve, 200
-
-        releve = {
-            "id": id,
-            "ch": args["ch"],
-            "date": args["date"],
-        }
-        releves.append(releve)
-        return releve, 201
-
 
 class Sonde(Resource):
     def get(self, id):
@@ -68,8 +49,8 @@ class Sonde(Resource):
 
     def post(self, id):
         parser = reqparse.RequestParser()
-        parser.add_argument("ch")
-        parser.add_argument("date")
+        parser.add_argument("Nom")
+        parser.add_argument("etat")
         args = parser.parse_args()
 
         for sonde in sondes:
@@ -78,10 +59,30 @@ class Sonde(Resource):
 
         sonde = {
             "id": id,
-            "ch": args["ch"],
-            "date": args["date"]
+            "Nom": args["Nom"],
+            "etat": args["etat"]
         }
         releves.append(sonde)
+        return sonde, 201
+    
+    def put(self, id):
+        parser = reqparse.RequestParser()
+        parser.add_argument("Nom")
+        parser.add_argument("etat")
+        args = parser.parse_args()
+
+        for sonde in sondes:
+            if (id == sonde["id"]):
+                sonde["Nom"] = args["Nom"]
+                sonde["etat"] = args["etat"]
+                return sonde, 200
+
+        sonde = {
+            "id": id,
+            "Nom": args["Nom"],
+            "etat": args["etat"],
+        }
+        sondes.append(sonde)
         return sonde, 201
 
 
