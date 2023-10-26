@@ -1,77 +1,55 @@
+from classe_metier import *
+import mysql.connector
+
 def extract_data(chaine):
     # Récupère l'id de la sonde
     idsonde = chaine[86:94]
     # Récupère la température
     temp = str(int(chaine[102:104], 16))
     if chaine[100:102] == "40":
-        temp = "Température : -" + temp[0:2] + "." + temp[2] + "°C"
+        temp = "-" + temp[0:2] + "." + temp[2]
     else:
-        temp = "Température : " + temp[0:2] + "." + temp[2] + "°C"
-    print(temp)
+        temp = temp[0:2] + "." + temp[2]
+    temp = float(temp)
+    temp = round(temp, 2)
+    print("Température :", temp, "°C")
     # Récupère le taux d'humidité (si le capteur n'a pas l'id 06182660)
     if idsonde != "06182660":
-        humid = str(int(chaine[104:106], 16))
-        humid = "Humidité  : " + humid + "%"
-        print(humid)
+        humid = float(int(chaine[104:106], 16))
+        print("Humidité : ", humid, "%")
     # Récupère le niveau de batterie
-    
+    batterie = float(int(chaine[96:100], 16) / 1000)
+    #batt = float(int(chaine[96:100], 16))
     # Récupère le RSSI
-    rssi = str(int(chaine[106:108], 16))
-    rssi = "RSSI : -" + rssi + "dBm"
+    rssi = "-" + str(int(chaine[106:108], 16))
+    rssi = float(rssi)
+    #rssi = "RSSI : -" + rssi + "dBm"
     print(rssi)
+    # Crée une instance de la classe Releve
+    leReleve = Releve(temp, humid, batterie, rssi)
+    req = leReleve.ajout_releve()
+    return req
 
 
-chaine = "545A004124240406020400000641884907900004150B0E17263000000008AAC0000001A404B6001900020B62182233000E5600B9384506182660000E1300B7FF3D010637C40D0A"
-extract_data(chaine)
+# Connection à la base de données
+conn = mysql.connector.connect(user = 'manu',
+                               host = 'localhost',
+                              database = 'cubes1')
+ 
 
-"""# Start symbol
-"54" = 'T'
-"5A" = 'Z'
-# Packet length
-"00 41" = "65 bytes"
-# Protocol type
-"24 24" = "$$"
-# Hardware type
-"04 06" =
-# Firmware version
-"02 04 00 00" = 2.4
-# IMEI
-"06 41 88 49 07 90 00 04" = 641884907900004
-# RCT Time
-"15 0B 0E 17 26 30" = 
-# Reserved
-"00 00" = 00 00
-# Status data length
-"00 08" = "8 bytes"
-# Alarm type
-"AA" = "Interval data"
-# Terminal information
-"C0"
-# Reserved
-"00 00"
-# Battery voltage
-"01 A4"
-# Power voltage
-"04 B6"
-# TAG information data length
-"00 19"
-# TAG type
-"00"
-# Number of the TAG
-"02"
-# Length of per TAG
-"0B"
-# ID
-"62 18 22 33"
-# Status
-"00"
-# Battery voltage
-"0E 56"
-# Temperature
-"00 B9"
-# Humidité
-"38"
-# RSSI
-"45"
-#06182660000E1300B7FF3D010637C40D0"""
+
+chaine = "545A004124240406020400000641884907900004150B0E17303800000008AAC0000001A404B6001900020B62182233000E5600B8384506182660000E1300B7FF3B01082D2D0D0A"
+req = extract_data(chaine)
+
+cursor = conn.cursor()
+
+# Exécution de la requête
+cursor.execute(req)
+
+conn.commit()
+
+cursor.close()
+
+# Déconnexion de la base de données
+conn.close()
 
