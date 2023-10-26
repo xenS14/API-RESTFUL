@@ -14,7 +14,7 @@ def extract_data(chaine):
         humid = "Humidité  : " + humid + "%"
         print(humid)
     # Récupère le niveau de batterie
-
+    
     # Récupère le RSSI
     rssi = str(int(chaine[106:108], 16))
     rssi = "RSSI : -" + rssi + "dBm"
@@ -74,3 +74,4 @@ extract_data(chaine)
 # RSSI
 "45"
 #06182660000E1300B7FF3D010637C40D0"""
+
