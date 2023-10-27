@@ -1,9 +1,25 @@
 from flask import Flask
+import requests
 from flask_restful import Resource, Api, reqparse
 
 
+# Récupère les données auprès du WebService
+response = requests.get("")
+if response.status_code == 200:
+    print("WS est ON")
+print(response.json())
+dico = response.json()
+
+
+# Lance le serveur web
 app = Flask(__name__)
-api = Api(app)
+@app.route('/')
+def hello():
+    return 'Hello, CESI!'
+
+if __name__ == '__main__':
+    app.run(debug=True)
+
 
 releves = [
     {"id": 13873,
@@ -89,14 +105,3 @@ class Sonde(Resource):
 api.add_resource(Releve, "/releve/<int:id>")
 api.add_resource(Sonde, "/sonde/<int:id>")
 app.run(debug=True)
-
- 
-# Connecting from the server
-conn = mysql.connector.connect(user = 'manu',
-                               host = 'localhost',
-                              database = 'cubes1')
- 
-print(conn)
- 
-# Disconnecting from the server
-conn.close()
