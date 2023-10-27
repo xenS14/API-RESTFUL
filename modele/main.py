@@ -6,6 +6,7 @@ def convert_hexa(hexa):
     return int(hexa, 16)
 
 
+
 def convert_date(hexa):
     result = "20"
     for i in range(0, len(hexa), 2):
@@ -65,20 +66,6 @@ def recup_liste_capteurs(connexion):
     return lesId
 
 
-def convertit_date(chaine):
-    tabDate = chaine.split(' ')
-    tabHeure = tabDate[4].split(':')
-    date = tabDate[3] + leMois[tabDate[2]] + tabDate[1] + tabHeure[0] + tabHeure[1] + tabHeure[2]
-    return date
-
-
-# Liste capteurs
-ls_capt = ["06190485", "62190434", "62182233"]
-
-# Dico des mois
-leMois = {"Jan": "01","Feb": "02", "Mar": "03", "Apr": "04", "May" : "05", "Jun": "06", "Jul" : "07",
-          "Aug" : "08", "Sep": "09", "Oct": "10", "Nov": "11", "Dec": "12"}
-
 # Ouvre la connexion à la base de données
 conn = mysql.connector.connect(user= "manu", host= "localhost", database= "iot")
 
@@ -94,8 +81,8 @@ liste_releves = []
 for ligne in dico:
     liste_releves.append(ligne)
 
-# Récupère la liste des capteurs
-liste_capteurs = recup_liste_capteurs(conn)
+# Liste des capteurs
+liste_capteurs = ["06190485", "62190434", "62182233"]
 
 # Récupère la liste des relevés déjà présents dans la BDD
 anciens_releves = recup_anciens_rel(conn)
@@ -103,10 +90,7 @@ for releve in liste_releves:
     # Si le relevé n'est pas présent dans la BDD
     if releve[0] not in anciens_releves:
         # Récupération de la date dans un format adapté à la BDD
-        # Date extraite de la chaine
         date = convert_date(releve[1][40:52])
-        # Date extraite du relevé
-        date = convertit_date(releve[2])
         # Stocke les données et les intègre dans la table Releve
         dataReleve = {"id": releve[0], "date": date}
         ajout_releve(conn, dataReleve)
