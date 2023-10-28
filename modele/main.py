@@ -1,5 +1,6 @@
 import requests
 import mysql.connector
+import time
 
 
 def convert_hexa(hexa):
@@ -79,68 +80,74 @@ ls_capt = ["06190485", "62190434", "62182233"]
 leMois = {"Jan": "01","Feb": "02", "Mar": "03", "Apr": "04", "May" : "05", "Jun": "06", "Jul" : "07",
           "Aug" : "08", "Sep": "09", "Oct": "10", "Nov": "11", "Dec": "12"}
 
-# Ouvre la connexion à la base de données
-conn = mysql.connector.connect(user= "manu", host= "localhost", database= "iot")
+i = 1
+while True:
+    # Ouvre la connexion à la base de données
+    conn = mysql.connector.connect(user= "manu", host= "localhost", database= "iot")
 
-# Récupère les données du Webservice
-response = requests.get("http://app.objco.com:8099/?account=16L1SPQZS3&limit=3")
-if response.status_code != 200:
-    print("Erreur de connexion")
-dico = response.json()
+    # Récupère les données du Webservice
+    response = requests.get("http://app.objco.com:8099/?account=16L1SPQZS3&limit=3")
+    if response.status_code != 200:
+        print("Erreur de connexion")
+    dico = response.json()
 
-# Stocke les relevés sous forme d'un tableau de tableaux à trois colonnes
-# 0 = id    1 = chaîne héxa     2 = date
-liste_releves = []
-for ligne in dico:
-    liste_releves.append(ligne)
+    # Stocke les relevés sous forme d'un tableau de tableaux à trois colonnes
+    # 0 = id    1 = chaîne héxa     2 = date
+    liste_releves = []
+    for ligne in dico:
+        liste_releves.append(ligne)
 
-# Récupère la liste des capteurs
-liste_capteurs = recup_liste_capteurs(conn)
+    # Récupère la liste des capteurs
+    liste_capteurs = recup_liste_capteurs(conn)
 
-# Récupère la liste des relevés déjà présents dans la BDD
-anciens_releves = recup_anciens_rel(conn)
-for releve in liste_releves:
-    # Si le relevé n'est pas présent dans la BDD
-    if releve[0] not in anciens_releves:
-        # Récupération de la date dans un format adapté à la BDD
-        # Date extraite de la chaine
-        date = convert_date(releve[1][40:52])
-        # Date extraite du relevé
-        date = convertit_date(releve[2])
-        # Stocke les données et les intègre dans la table Releve
-        dataReleve = {"id": releve[0], "date": date}
-        ajout_releve(conn, dataReleve)
-        # Récupère les données du relevé pour chaque capteur présent dans ce relevé
-        for capteur in liste_capteurs:
-            chaine = releve[1]
-            pos = chaine.find(capteur)
-            if pos != -1:
-                print("Capteur n° " + str(chaine[pos:pos + 8]) + " || Relevé n° : " + str(releve[0]) +
-                      " || " + str(releve[2]))
-                volt = convert_hexa(chaine[pos + 10: pos + 14]) / 1000
-                temp = convert_hexa(chaine[pos + 16: pos + 18]) / 10
-                signeTemp = convert_hexa(chaine[pos + 15 : pos + 16])
-                signe = ""
-                if signeTemp == "1":
-                    temp = "-" + str(temp)
-                temp = float(temp)
-                humid = convert_hexa(chaine[pos + 18: pos + 20])
-                if humid == 255:
-                    humid = ''
-                else:
-                    humid = str(humid)
-                rssi = "-" + str(convert_hexa(chaine[pos + 20: pos +22]))
-                rssi = float(rssi)
-                # Stocke les données et les insére dans la table Sonde_has_releve
-                datas = {"idSonde": capteur, "idReleve": releve[0], "Temperature": temp, "Humidite": humid,
-                         "Niveau_batterie": volt, "rssi": rssi}
-                ajout_releve_sonde(conn, datas)
-                # Affiche les relevés
-                print("Voltage : " + str(volt) + "V || Température : " + signe + str(temp) + "°C || Humidité : " +
-                      str(humid) + "% || RSSI : " + str(rssi) + "dBm\n")
+    # Récupère la liste des relevés déjà présents dans la BDD
+    anciens_releves = recup_anciens_rel(conn)
+    for releve in liste_releves:
+        # Si le relevé n'est pas présent dans la BDD
+        if releve[0] not in anciens_releves:
+            # Récupère la date dans un format adapté à la BDD
+            # Date extraite de la chaine
+            date = convert_date(releve[1][40:52])
+            # Date extraite du relevé
+            date = convertit_date(releve[2])
+            # Stocke les données et les intègre dans la table Releve
+            dataReleve = {"id": releve[0], "date": date}
+            ajout_releve(conn, dataReleve)
+            # Récupère les données du relevé pour chaque capteur présent dans ce relevé
+            for capteur in liste_capteurs:
+                chaine = releve[1]
+                pos = chaine.find(capteur)
+                if pos != -1:
+                    print("Capteur n° " + str(chaine[pos:pos + 8]) + " || Relevé n° : " + str(releve[0]) +
+                        " || " + str(releve[2]))
+                    volt = convert_hexa(chaine[pos + 10: pos + 14]) / 1000
+                    temp = convert_hexa(chaine[pos + 16: pos + 18]) / 10
+                    signeTemp = convert_hexa(chaine[pos + 15 : pos + 16])
+                    signe = ""
+                    if signeTemp == "1":
+                        temp = "-" + str(temp)
+                    temp = float(temp)
+                    humid = convert_hexa(chaine[pos + 18: pos + 20])
+                    if humid == 255:
+                        humid = ''
+                    else:
+                        humid = str(humid)
+                    rssi = "-" + str(convert_hexa(chaine[pos + 20: pos +22]))
+                    rssi = float(rssi)
+                    # Stocke les données et les insére dans la table Sonde_has_releve
+                    datas = {"idSonde": capteur, "idReleve": releve[0], "Temperature": temp, "Humidite": humid,
+                            "Niveau_batterie": volt, "rssi": rssi}
+                    ajout_releve_sonde(conn, datas)
+                    # Affiche les relevés
+                    print("Voltage : " + str(volt) + "V || Température : " + signe + str(temp) + "°C || Humidité : " +
+                        str(humid) + "% || RSSI : " + str(rssi) + "dBm\n")
 
-# Ferme la connexion à la BDD
-conn.close()
+    # Ferme la connexion à la BDD
+    conn.close()
+    # Met le programme en pause pendant 304 secondes (temps entre chaque relevé)
+    print("Nb de tours :", i)
+    i += 1
+    time.sleep(304)
 
 
 """
