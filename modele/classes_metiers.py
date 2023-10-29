@@ -1,8 +1,9 @@
 import requests
 import mysql.connector
+from flask import Flask
 
 
-# Liste capteurs
+# Liste des capteurs
 ls_capt = ["06190485", "62190434", "62182233"]
 
 
@@ -12,6 +13,7 @@ leMois = {"Jan": "01","Feb": "02", "Mar": "03", "Apr": "04", "May" : "05", "Jun"
 
 
 def convert_hexa(hexa: str) -> int:
+    """ Convertit une chaîne hexadécimale en entier """
     return int(hexa, 16)
 
 
@@ -82,7 +84,7 @@ def recup_liste_capteurs(connexion) -> list:
 
 
 def convertit_date(chaine: str) -> str:
-    """ Convertit une date du format DDlettre, DDchiffre MM YYYY HH:MM:SS  au format YYYYMMDDHHMMSS """
+    """ Convertit une date au format Ddd, DD MM YYYY HH:MM:SS en date au format YYYYMMDDHHMMSS """
     tabDate = chaine.split(' ')
     tabHeure = tabDate[4].split(':')
     date = tabDate[3] + leMois[tabDate[2]] + tabDate[1] + tabHeure[0] + tabHeure[1] + tabHeure[2]
@@ -95,20 +97,18 @@ def connexion_bdd(user: str, host: str, db: str):
     return conn
 
 
-# Ferme la connexion à la base de données
 def connexion_ferme(conn):
+    """ Ferme la connexion à la base de données """
     conn.close()
 
 
-# Récupère les données du Webservice
 def recup_datas_ws() -> list:
     """ Récupère les relevés auprès du WebService et les stocke dans un tableau de tableaux """
-    response = requests.get("http://app.objco.com:8099/?account=16L1SPQZS3&limit=1")
+    response = requests.get("http://app.objco.com:8099/?account=16L1SPQZS3&limit=3")
     if response.status_code != 200:
         print("Erreur de connexion")
     dico = response.json()
-    # Stocke les relevés sous forme d'un tableau de tableaux à trois colonnes
-    # 0 = id    1 = chaîne héxa     2 = date
+    # Stocke les relevés sous forme d'un tableau de tableaux à trois colonnes (0 = id, 1 = chaîne hexa, 2 = date)
     liste_releves = []
     for ligne in dico:
         liste_releves.append(ligne)
@@ -116,6 +116,7 @@ def recup_datas_ws() -> list:
 
 
 def trait_datas(conn, liste_releves: list):
+    """ Traite les relevés reçus du Webservice en vue de les stocker dans la base de données """
     # Récupère la liste des capteurs
     liste_capteurs = recup_liste_capteurs(conn)
     # Stocke les relevés à enregistrer dans la BDD
@@ -125,17 +126,12 @@ def trait_datas(conn, liste_releves: list):
     # Récupère la liste des relevés déjà présents dans la BDD
     anciens_releves = recup_anciens_rel(conn)
     for releve in liste_releves:
-        # Si le relevé n'est pas présent dans la BDD
+        # Si le relevé n'est pas déjà présent dans la BDD, récupère ses infos
         if releve[0] not in anciens_releves:
             # Récupère la date dans un format adapté à la BDD
-            # Date extraite de la chaine
-            # date = convert_date(releve[1][40:52])
-            # Date extraite du relevé
             date = convertit_date(releve[2])
-            # Stocke les données et les intègre dans la table Releve
-            dataReleve = {"id": releve[0], "date": date}
-            les_releves.append(dataReleve)
-            # ajout_releve(conn, dataReleve)
+            # Ajoute les données relative au relevé dans la liste
+            les_releves.append({"id": releve[0], "date": date})
             # Récupère les données du relevé pour chaque capteur présent dans ce relevé
             for capteur in liste_capteurs:
                 chaine = releve[1]
@@ -143,37 +139,31 @@ def trait_datas(conn, liste_releves: list):
                 if pos != -1:
                     print("Capteur n° " + str(chaine[pos:pos + 8]) + " || Relevé n° : " + str(releve[0]) +
                         " || " + str(releve[2]))
-                    volt = convert_hexa(chaine[pos + 10: pos + 14]) / 1000
-                    temp = convert_hexa(chaine[pos + 16: pos + 18]) / 10
-                    signeTemp = convert_hexa(chaine[pos + 15 : pos + 16])
-                    signe = ""
-                    if signeTemp == "1":
+                    volt = convert_hexa(chaine[pos + 10: pos + 14]) / 1000      # Voltage
+                    temp = convert_hexa(chaine[pos + 16: pos + 18]) / 10        # Température
+                    signeTemp = convert_hexa(chaine[pos + 15 : pos + 16])       # Signe de la température (+ ou -)
+                    temp = float("-" + str(temp)) if signeTemp == "1" else float(temp)
+                    """if signeTemp == "1":
                         temp = "-" + str(temp)
-                    temp = float(temp)
-                    humid = convert_hexa(chaine[pos + 18: pos + 20])
-                    if humid == 255:
-                        humid = ''
+                    temp = float(temp)"""
+                    humid = convert_hexa(chaine[pos + 18: pos + 20])            # Taux d'humidité
+                    humid = '' if humid == 255 else str(humid)
+                    """humid = ''
                     else:
-                        humid = str(humid)
-                    rssi = "-" + str(convert_hexa(chaine[pos + 20: pos +22]))
+                        humid = str(humid)"""
+                    rssi = "-" + str(convert_hexa(chaine[pos + 20: pos +22]))   # RSSI
                     rssi = float(rssi)
-                    # Stocke les données et les insére dans la table Sonde_has_releve
+                    # Ajoute les données relatives au relevé de sonde dans la liste
                     datas = {"idSonde": capteur, "idReleve": releve[0], "Temperature": temp, "Humidite": humid,
                             "Niveau_batterie": volt, "rssi": rssi}
                     les_rel_sonde.append(datas)
-                    # ajout_releve_sonde(conn, datas)
-                    # Affiche les relevés
-                    print("Voltage : " + str(volt) + "V || Température : " + signe + str(temp) + "°C || Humidité : " +
+                    # Affiche les relevés récupérés
+                    print("Voltage : " + str(volt) + "V || Température : " + str(temp) + "°C || Humidité : " +
                         str(humid) + "% || RSSI : " + str(rssi) + "dBm\n")
     return les_releves, les_rel_sonde
 
 
-"""# Ferme la connexion à la BDD
-conn.close()"""
-
-
 """
-from flask import Flask
 app = Flask(__name__)
 @app.route('/')
 def hello():
