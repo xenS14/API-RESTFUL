@@ -4,7 +4,7 @@ from flask_restful import Resource, Api, reqparse
 
 
 # Récupère les données auprès du WebService
-response = requests.get("")
+response = requests.get("http://app.objco.com:8099/?account=16L1SPQZS3&limit=6")
 if response.status_code == 200:
     print("WS est ON")
 print(response.json())
