@@ -1,10 +1,7 @@
 import requests
 import mysql.connector
 from flask import Flask
-
-
-# Liste des capteurs
-ls_capt = ["06190485", "62190434", "62182233"]
+from datetime import datetime
 
 
 # Correspondance mois:numéro
@@ -17,17 +14,27 @@ def convert_hexa(hexa: str) -> int:
     return int(hexa, 16)
 
 
-"""def convert_date(hexa):
-    result = "20"
-    for i in range(0, len(hexa), 2):
-        if convert_hexa(hexa[i:i + 2]) < 10:
-            result += hexa[i: i +2]
-        else:
-            result += str(int(hexa[i:i + 2], 16))
-    return result"""
+def recup_cinq_releves_sonde(connexion, sonde):
+    cursor = connexion.cursor()
+    cursor.execute(f"SELECT Temperature FROM `sonde_has_releve` WHERE Sonde_idSonde = {sonde} ORDER BY Releve_idReleve DESC LIMIT 5")
+    records = cursor.fetchall()
+    lesTemp = []
+    for record in records:
+        lesTemp.append(record[0])
+    return lesTemp
 
 
-def ajout_releve_sonde(connexion, datas):
+def recup_cinq_releves(connexion):
+    cursor = connexion.cursor()
+    cursor.execute(f"SELECT * FROM `releve` ORDER BY Date_releve DESC LIMIT 5")
+    records = cursor.fetchall()
+    lesRel = []
+    for record in records:
+        date = record[1].strftime("%Y-%m-%d %H:%M:%S")
+        lesRel.append({"id": record[0], "date": date})
+    return lesRel
+
+def ajout_releve_sonde(connexion, datas: tuple[list, dict]):
     """ Ajoute les relevés de sonde passés en paramètre dans la base de données """
     cursor = connexion.cursor()
     for i in range(len(datas)):
@@ -40,7 +47,7 @@ def ajout_releve_sonde(connexion, datas):
     cursor.close()
 
 
-def ajout_releve(connexion, datas):
+def ajout_releve(connexion, datas: tuple[list, dict]):
     """ Ajoute les relevés passés en paramètre dans la base de données """
     cursor = connexion.cursor()
     for i in range(len(datas)):
@@ -50,7 +57,7 @@ def ajout_releve(connexion, datas):
     cursor.close()
 
 
-def ajout_capteur(connexion, liste):
+def ajout_capteur(connexion, liste: list):
     """ Ajoute les sondes passées en paramètre dans la base de données """
     cursor = connexion.cursor()
     for capteur in liste:
@@ -102,7 +109,7 @@ def connexion_ferme(conn):
     conn.close()
 
 
-def recup_datas_ws() -> list:
+def recup_datas_ws() -> tuple[list, list]:
     """ Récupère les relevés auprès du WebService et les stocke dans un tableau de tableaux """
     response = requests.get("http://app.objco.com:8099/?account=16L1SPQZS3&limit=3")
     if response.status_code != 200:
@@ -115,7 +122,7 @@ def recup_datas_ws() -> list:
     return liste_releves
 
 
-def trait_datas(conn, liste_releves: list):
+def trt_chaine(conn, liste_releves: list) -> tuple[list, list]:
     """ Traite les relevés reçus du Webservice en vue de les stocker dans la base de données """
     # Récupère la liste des capteurs
     liste_capteurs = recup_liste_capteurs(conn)
@@ -130,7 +137,7 @@ def trait_datas(conn, liste_releves: list):
         if releve[0] not in anciens_releves:
             # Récupère la date dans un format adapté à la BDD
             date = convertit_date(releve[2])
-            # Ajoute les données relative au relevé dans la liste
+            # Ajoute les données relatives au relevé dans la liste
             les_releves.append({"id": releve[0], "date": date})
             # Récupère les données du relevé pour chaque capteur présent dans ce relevé
             for capteur in liste_capteurs:
@@ -143,32 +150,15 @@ def trait_datas(conn, liste_releves: list):
                     temp = convert_hexa(chaine[pos + 16: pos + 18]) / 10        # Température
                     signeTemp = convert_hexa(chaine[pos + 15 : pos + 16])       # Signe de la température (+ ou -)
                     temp = float("-" + str(temp)) if signeTemp == "1" else float(temp)
-                    """if signeTemp == "1":
-                        temp = "-" + str(temp)
-                    temp = float(temp)"""
                     humid = convert_hexa(chaine[pos + 18: pos + 20])            # Taux d'humidité
                     humid = '' if humid == 255 else str(humid)
-                    """humid = ''
-                    else:
-                        humid = str(humid)"""
                     rssi = "-" + str(convert_hexa(chaine[pos + 20: pos +22]))   # RSSI
                     rssi = float(rssi)
                     # Ajoute les données relatives au relevé de sonde dans la liste
                     datas = {"idSonde": capteur, "idReleve": releve[0], "Temperature": temp, "Humidite": humid,
                             "Niveau_batterie": volt, "rssi": rssi}
                     les_rel_sonde.append(datas)
-                    # Affiche les relevés récupérés
+                    # Affiche dans la console les relevés récupérés
                     print("Voltage : " + str(volt) + "V || Température : " + str(temp) + "°C || Humidité : " +
-                        str(humid) + "% || RSSI : " + str(rssi) + "dBm\n")
+                        humid + "% || RSSI : " + str(rssi) + "dBm\n")
     return les_releves, les_rel_sonde
-
-
-"""
-app = Flask(__name__)
-@app.route('/')
-def hello():
-    return "Hello world!"
-if __name__ == '__main__':
-    app.run(debug=True)
-"""
-
