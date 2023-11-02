@@ -1,33 +1,7 @@
-from flask import Flask
-import requests
 from flask_restful import Resource, Api, reqparse
 
 
-# Récupère les données auprès du WebService
-response = requests.get("http://app.objco.com:8099/?account=16L1SPQZS3&limit=6")
-if response.status_code == 200:
-    print("WS est ON")
-print(response.json())
-dico = response.json()
-
-
-# Lance le serveur web
-app = Flask(__name__)
-@app.route('/')
-def hello():
-    return 'Hello, CESI!'
-
-if __name__ == '__main__':
-    app.run(debug=True)
-
-
-releves = [
-    {"id": 13873,
-     "ch": "545A004124240406020400000641884907900004150B0E173B0500000008AAC0000001A404B7001900020B62182233000E5600B8384406182660000E1300B7FF3C010A5EDC0D0A",
-     "date": "Thu, 25 Nov 2021 12:04:00 GMT"}
-]
-
-sondes = []
+releves, sondes = []
 
 
 class Releve(Resource):
@@ -100,8 +74,3 @@ class Sonde(Resource):
         }
         sondes.append(sonde)
         return sonde, 201
-
-
-api.add_resource(Releve, "/releve/<int:id>")
-api.add_resource(Sonde, "/sonde/<int:id>")
-app.run(debug=True)
