@@ -9,22 +9,44 @@ leMois = {"Jan": "01","Feb": "02", "Mar": "03", "Apr": "04", "May" : "05", "Jun"
           "Aug" : "08", "Sep": "09", "Oct": "10", "Nov": "11", "Dec": "12"}
 
 
+# Données pour la connexion à la BDD
+user = "manu"
+host = "localhost"
+db = "iot"
+
+
+def connexion_bdd(user: str, host: str, db: str):
+    """ Ouvre la connexion à la base de données """
+    conn = mysql.connector.connect(user=user, host=host, database=db)
+    return conn
+
+
+def connexion_ferme(conn):
+    """ Ferme la connexion à la base de données """
+    conn.close()
+
+
 def convert_hexa(hexa: str) -> int:
     """ Convertit une chaîne hexadécimale en entier """
     return int(hexa, 16)
 
 
 def recup_cinq_releves_sonde(connexion, sonde):
+    """ Récupère les 5 derniers relevés pour une sonde donnée """
     cursor = connexion.cursor()
-    cursor.execute(f"SELECT Temperature FROM `sonde_has_releve` WHERE Sonde_idSonde = {sonde} ORDER BY Releve_idReleve DESC LIMIT 5")
+    cursor.execute("SELECT sonde_has_releve.*, releve.Date_releve FROM `releve` "
+                   "INNER JOIN `sonde_has_releve` ON sonde_has_releve.Releve_idReleve = releve.idReleve "
+                   f"WHERE Sonde_idSonde = {sonde} ORDER BY Releve_idReleve DESC LIMIT 5")
     records = cursor.fetchall()
-    lesTemp = []
+    lesRelSonde = []
     for record in records:
-        lesTemp.append(record[0])
-    return lesTemp
+        lesRelSonde.append({"idSonde": record[0], "idReleve": record[1], "Temp": record[2], "Hum": record[3], 
+                            "Batt": record[4], "RSSI": record[5], "Date": record[6]})
+    return lesRelSonde
 
 
 def recup_cinq_releves(connexion):
+    """ Récupère les 5 derniers relevés """
     cursor = connexion.cursor()
     cursor.execute(f"SELECT * FROM `releve` ORDER BY Date_releve DESC LIMIT 5")
     records = cursor.fetchall()
@@ -33,6 +55,7 @@ def recup_cinq_releves(connexion):
         date = record[1].strftime("%Y-%m-%d %H:%M:%S")
         lesRel.append({"id": record[0], "date": date})
     return lesRel
+
 
 def ajout_releve_sonde(connexion, datas: tuple[list, dict]):
     """ Ajoute les relevés de sonde passés en paramètre dans la base de données """
@@ -96,17 +119,6 @@ def convertit_date(chaine: str) -> str:
     tabHeure = tabDate[4].split(':')
     date = tabDate[3] + leMois[tabDate[2]] + tabDate[1] + tabHeure[0] + tabHeure[1] + tabHeure[2]
     return date
-
-
-def connexion_bdd(user: str, host: str, db: str):
-    """ Ouvre la connexion à la base de données """
-    conn = mysql.connector.connect(user=user, host=host, database=db)
-    return conn
-
-
-def connexion_ferme(conn):
-    """ Ferme la connexion à la base de données """
-    conn.close()
 
 
 def recup_datas_ws() -> tuple[list, list]:

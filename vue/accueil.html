@@ -1,0 +1,23 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+    <head>
+        <meta charset="UTF-8">
+        <title>{{title}}</title>
+    </head>
+    <body>
+        {% if data|length > 0 %}
+        <h1>Sonde n°{{ data[0].idSonde }}</h1>
+            {% for elt in data %}
+            <p>- Relevé n°{{ elt.idReleve }}, le {{ elt.Date }} | Température : {{ elt.Temp }}°C | Humidité : {{ elt.Hum }}%
+                 | Batterie : {{ elt.Batt }}V | Signal RSSI : {{ elt.RSSI }}dBm
+            </p>
+            {% endfor %}
+        {% else %}
+            <p></p>
+        {% endif %}
+    </body>
+</html>
+<h1>Titre</h1>
+
+<p>Hello World 2</p>

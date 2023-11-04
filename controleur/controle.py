@@ -3,24 +3,21 @@ from vue.affichage_donnees import *
 import time
 
 # Lance la connexion à la base de données
-conn = connexion_bdd("manu", "localhost", "iot")
+conn = connexion_bdd(user, host, db)
 
-# Récupère les données auprès du WebService à intervalle régulier
 while True :
+    # Récupère les données auprès du WebService à intervalle régulier
     datas = recup_datas_ws()
 
     # Traite les données récupérées auprès du WebService
     rel, rel_sonde = trt_chaine(conn, datas)
 
+    # Lance l'api pour affichage dans une page web
+    lancer_app()
+
     # Envoi les données vers la base de données
     ajout_releve(conn, rel)
     ajout_releve_sonde(conn, rel_sonde)
-
-    # Récupère les 5 derniers relevés
-    rel = recup_cinq_releves(conn)
-
-    # Affiche les 5 derniers relevés dans la page web
-    lancer_app(rel)
 
     # Attend 5 minutes et 4 secondes
     time.sleep(64)
