@@ -1,5 +1,6 @@
 from flask import Flask, render_template
 from modele.methodes_metiers import *
+from modele.var_globale import *
 
 
 def lancer_app():

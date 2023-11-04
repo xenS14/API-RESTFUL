@@ -1,4 +1,5 @@
 from modele.methodes_metiers import *
+from modele.var_globale import *
 from vue.affichage_donnees import *
 import time
 
