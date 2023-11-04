@@ -1,0 +1,53 @@
+.cadrehist {
+    background-color: rgb(53, 82, 208);
+    height: auto;
+    border-radius: 15px;
+    padding: 1em;
+  }
+  
+  .btnTHH {
+    display: flex;
+    justify-content: space-between;
+    margin-left: 1em;
+    margin-right: 1em;
+  }
+  
+  .btn {
+    background-color: rgb(7, 203, 203);
+    color: white;
+    font-size: large;
+    height: 2.2em;
+    width: 12em;
+    border-radius: 20px;
+    border-width: 0.13em;
+  }
+  
+  .intithisto {
+    text-decoration: underline;
+    font-size: 1.3em;
+    color: rgb(255, 255, 255);
+    text-align: center;
+  
+  }
+  
+  .relevesonde {
+    font-size: 1.2em;
+    color: rgb(255, 255, 255);
+    text-align: center;
+  }
+  
+  .donnees {
+    background-color: rgb(7, 203, 203);
+    height: auto;
+    border-radius: 20px;
+    padding-bottom: 0.5%;
+    padding-top: 0.5%;
+    margin-left: 1em;
+    margin-right: 1em;
+    border-width: 0.13em;
+    border-style: solid;
+    border-top-color: grey;
+    border-left-color: grey;
+    border-right-color: black;
+    border-bottom-color: black;
+  }

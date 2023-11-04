@@ -2,17 +2,7 @@ import requests
 import mysql.connector
 from flask import Flask
 from datetime import datetime
-
-
-# Correspondance mois:numéro
-leMois = {"Jan": "01","Feb": "02", "Mar": "03", "Apr": "04", "May" : "05", "Jun": "06", "Jul" : "07",
-          "Aug" : "08", "Sep": "09", "Oct": "10", "Nov": "11", "Dec": "12"}
-
-
-# Données pour la connexion à la BDD
-user = "manu"
-host = "localhost"
-db = "iot"
+from modele.var_globale import *
 
 
 def connexion_bdd(user: str, host: str, db: str):

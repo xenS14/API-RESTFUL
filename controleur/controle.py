@@ -13,12 +13,12 @@ while True :
     # Traite les données récupérées auprès du WebService
     rel, rel_sonde = trt_chaine(conn, datas)
 
-    # Lance l'api pour affichage dans une page web
-    lancer_app()
-
     # Envoi les données vers la base de données
     ajout_releve(conn, rel)
     ajout_releve_sonde(conn, rel_sonde)
+
+    # Lance l'api pour affichage dans une page web
+    lancer_app()
 
     # Attend 5 minutes et 4 secondes
     time.sleep(64)

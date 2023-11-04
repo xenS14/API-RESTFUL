@@ -13,5 +13,12 @@ def lancer_app():
         connexion_ferme(connexion)
         return render_template('accueil.html', title='Accueil', data=data)
     
+    @app.route('/historique')
+    def historique():
+        connexion = connexion_bdd(user, host, db)
+        data = recup_cinq_releves_sonde(connexion, 62190434)
+        connexion_ferme(connexion)
+        return render_template('historique.html', title='Historique des relevés', data=data)
+    
     if __name__ == "vue.affichage_donnees":
             app.run(debug=True)
