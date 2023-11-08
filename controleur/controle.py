@@ -2,26 +2,16 @@ from modele.methodes_metiers import *
 from modele.var_globale import *
 from vue.affichage_donnees import *
 import time
+import threading
 
 # Lance la connexion à la base de données
 conn = connexion_bdd(user, host, db)
 
-while True :
-    # Récupère les données auprès du WebService à intervalle régulier
-    datas = recup_datas_ws()
+# Création d'un Thread pour la procédure de récupération et stockage des données
+threading.Thread(target=lance_procedure_recup, args=(conn,)).start()
 
-    # Traite les données récupérées auprès du WebService
-    rel, rel_sonde = trt_chaine(conn, datas)
-
-    # Envoi les données vers la base de données
-    ajout_releve(conn, rel)
-    ajout_releve_sonde(conn, rel_sonde)
-
-    # Lance l'api pour affichage dans une page web
-    lancer_app()
-
-    # Attend 5 minutes et 4 secondes
-    time.sleep(64)
+# Lance l'API
+lancer_app()
 
 # Ferme la connexion à la base de données
 connexion_ferme(conn)

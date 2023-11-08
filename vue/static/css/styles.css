@@ -1,5 +1,5 @@
 .cadrehist {
-    background-color: rgb(53, 82, 208);
+    background-color: rgb(3, 107, 161);
     height: auto;
     border-radius: 15px;
     padding: 1em;
@@ -14,6 +14,7 @@
   
   .btn {
     background-color: rgb(7, 203, 203);
+    font-family: "Roboto";
     color: white;
     font-size: large;
     height: 2.2em;
@@ -34,11 +35,13 @@
     font-size: 1.2em;
     color: rgb(255, 255, 255);
     text-align: center;
+    height: 11em;
+    overflow: auto;
   }
   
   .donnees {
+    font-family: "Roboto";
     background-color: rgb(7, 203, 203);
-    height: auto;
     border-radius: 20px;
     padding-bottom: 0.5%;
     padding-top: 0.5%;

@@ -2,10 +2,13 @@
 <html lang="fr">
     <head>
         <meta charset="UTF-8">
-        <link rel="stylesheet" href="{{ url_for('static', filename= 'styles.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename= 'css/styles.css') }}">
         <title>{{title}}</title>
     </head>
     <body>
+        <p>
+            <button class='btn' onclick="window.location='http://127.0.0.1:5000/historique'" type="button">Historique</button>
+        </p>
         {% if data|length > 0 %}
         <h1>Sonde n°{{ data[0].idSonde }}</h1>
             {% for elt in data %}

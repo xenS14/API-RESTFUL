@@ -1,5 +1,6 @@
 import requests
 import mysql.connector
+import time
 from flask import Flask
 from datetime import datetime
 from modele.var_globale import *
@@ -14,6 +15,15 @@ def connexion_bdd(user: str, host: str, db: str):
 def connexion_ferme(conn):
     """ Ferme la connexion à la base de données """
     conn.close()
+
+
+def recup_acc_api(conn) -> str:
+    """ Récupère la clé pour interagir avec le Webservice """
+    cursor = conn.cursor()
+    cursor.execute("SELECT account_API FROM utilisateur WHERE idUtilisateur = 1")
+    record = cursor.fetchone()[0]
+    cursor.close()
+    return record
 
 
 def convert_hexa(hexa: str) -> int:
@@ -32,6 +42,7 @@ def recup_cinq_releves_sonde(connexion, sonde):
     for record in records:
         lesRelSonde.append({"idSonde": record[0], "idReleve": record[1], "Temp": record[2], "Hum": record[3], 
                             "Batt": record[4], "RSSI": record[5], "Date": record[6]})
+    cursor.close()
     return lesRelSonde
 
 
@@ -44,6 +55,7 @@ def recup_cinq_releves(connexion):
     for record in records:
         date = record[1].strftime("%Y-%m-%d %H:%M:%S")
         lesRel.append({"id": record[0], "date": date})
+    cursor.close()
     return lesRel
 
 
@@ -70,13 +82,30 @@ def ajout_releve(connexion, datas: tuple[list, dict]):
     cursor.close()
 
 
-def ajout_capteur(connexion, liste: list):
+def ajout_sonde(connexion, sonde: dict):
     """ Ajoute les sondes passées en paramètre dans la base de données """
     cursor = connexion.cursor()
-    for capteur in liste:
-        req = f"INSERT INTO `sonde`(`idSonde`, `Nom`, `Inactif`) VALUES ('{capteur}', '', 0)"
-        cursor.execute(req)
-        connexion.commit()
+    req = f"INSERT INTO `sonde`(`idSonde`, `Nom`, `Inactif`) VALUES ('{sonde['id']}', '', {sonde['statut']})"
+    cursor.execute(req)
+    connexion.commit()
+    cursor.close()
+
+
+def del_sonde(connexion, sonde: str):
+    """ Supprime la sonde passée en paramètre dans la base de données """
+    cursor = connexion.cursor()
+    req = f"DELETE FROM `sonde` WHERE idSonde = {sonde}"
+    cursor.execute(req)
+    connexion.commit()
+    cursor.close()
+
+
+def upd_statut_sonde(connexion, sonde: dict):
+    """ Modifie le statut de la sonde passée en paramètre dans la base de données """
+    cursor = connexion.cursor()
+    req = f"UPDATE `sonde` SET `Inactif` = {sonde['statut']} WHERE idSonde = {sonde['id']}"
+    cursor.execute(req)
+    connexion.commit()
     cursor.close()
 
 
@@ -94,13 +123,13 @@ def recup_anciens_rel(connexion) -> list:
 def recup_liste_capteurs(connexion) -> list:
     """ Récupère la liste des sondes enregistrées dans la base de données """
     cursor = connexion.cursor()
-    cursor.execute("SELECT idSonde FROM sonde")
+    cursor.execute("SELECT idSonde FROM sonde WHERE Inactif = 0")
     records = cursor.fetchall()
-    lesId = []
+    lesSondes = []
     for record in records:
-        lesId.append(record[0])
+        lesSondes.append(record[0])
     cursor.close()
-    return lesId
+    return lesSondes
 
 
 def convertit_date(chaine: str) -> str:
@@ -111,9 +140,9 @@ def convertit_date(chaine: str) -> str:
     return date
 
 
-def recup_datas_ws() -> tuple[list, list]:
+def recup_datas_ws(cle: str) -> tuple[list, list]:
     """ Récupère les relevés auprès du WebService et les stocke dans un tableau de tableaux """
-    response = requests.get("http://app.objco.com:8099/?account=16L1SPQZS3&limit=3")
+    response = requests.get(f"http://app.objco.com:8099/?account={cle}&limit=3")
     if response.status_code != 200:
         print("Erreur de connexion")
     dico = response.json()
@@ -130,7 +159,7 @@ def trt_chaine(conn, liste_releves: list) -> tuple[list, list]:
     liste_capteurs = recup_liste_capteurs(conn)
     # Stocke les relevés à enregistrer dans la BDD
     les_releves = []
-    # Stocker les releves_has_sonde à enregistrer dans la BDD
+    # Stocke les releves_has_sonde à enregistrer dans la BDD
     les_rel_sonde = []
     # Récupère la liste des relevés déjà présents dans la BDD
     anciens_releves = recup_anciens_rel(conn)
@@ -144,10 +173,9 @@ def trt_chaine(conn, liste_releves: list) -> tuple[list, list]:
             # Récupère les données du relevé pour chaque capteur présent dans ce relevé
             for capteur in liste_capteurs:
                 chaine = releve[1]
+                # Cherche si le capteur est présent dans le relevé
                 pos = chaine.find(capteur)
                 if pos != -1:
-                    print("Capteur n° " + str(chaine[pos:pos + 8]) + " || Relevé n° : " + str(releve[0]) +
-                        " || " + str(releve[2]))
                     volt = convert_hexa(chaine[pos + 10: pos + 14]) / 1000      # Voltage
                     temp = convert_hexa(chaine[pos + 16: pos + 18]) / 10        # Température
                     signeTemp = convert_hexa(chaine[pos + 15 : pos + 16])       # Signe de la température (+ ou -)
@@ -161,6 +189,26 @@ def trt_chaine(conn, liste_releves: list) -> tuple[list, list]:
                             "Niveau_batterie": volt, "rssi": rssi}
                     les_rel_sonde.append(datas)
                     # Affiche dans la console les relevés récupérés
+                    print("Capteur n° " + str(chaine[pos:pos + 8]) + " || Relevé n° : " + str(releve[0]) + " || " + str(releve[2]))
                     print("Voltage : " + str(volt) + "V || Température : " + str(temp) + "°C || Humidité : " +
                         humid + "% || RSSI : " + str(rssi) + "dBm\n")
     return les_releves, les_rel_sonde
+
+
+def lance_procedure_recup(conn):
+    """ Boucle sur la récupération des données auprès du Webservice et l'envoi de ces données vers la BDD à intervalles réguliers """
+    # Récupère la clé pour se connecter au Webservice
+    cle = recup_acc_api(conn)
+    while True :
+        # Récupère les données auprès du WebService à intervalle régulier
+        datas = recup_datas_ws(cle)
+
+        # Traite les données récupérées auprès du WebService
+        rel, rel_sonde = trt_chaine(conn, datas)
+
+        # Envoi les données vers la base de données
+        ajout_releve(conn, rel)
+        ajout_releve_sonde(conn, rel_sonde)
+
+        # Attend 5 minutes et 4 secondes
+        time.sleep(64)
