@@ -72,6 +72,12 @@ CREATE TABLE utilisateur (
   account_API varchar(10) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 
+--
+-- Déchargement des données de la table utilisateur
+--
+
+INSERT INTO utilisateur (idUtilisateur, Prénom, Nom, Numero_telephone, Email, Identifiant, Mot_de_passe, account_API) VALUES
+(1, 'Jack', 'THIEM', NULL, NULL, NULL, NULL, '16L1SPQZS3');
 
 --
 -- Index pour les tables déchargées
