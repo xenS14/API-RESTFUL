@@ -255,7 +255,9 @@ def trt_chaine(conn, liste_releves: list) -> tuple[list, list]:
 
 
 def lance_procedure_recup(conn):
-    """ Boucle sur la récupération des données auprès du Webservice et l'envoi de ces données vers la BDD à intervalles réguliers """
+    """
+    Boucle sur la récupération des données auprès du Webservice et l'envoi de ces données vers la BDD à intervalles réguliers
+    """
     # Récupère la clé pour se connecter au Webservice
     cle = recup_acc_api(conn)
     while True :

@@ -3,7 +3,7 @@
     <head>
       <title>{{ title }}</title>
       <meta charset="utf-8">
-      <meta http-equiv="refresh" content="5">
+      <meta http-equiv="refresh" content="64">
       <link rel="stylesheet" href="static/css/styles.css">
     </head>
     <body>
@@ -14,10 +14,11 @@
                 <button class="btn" type="button">Historique</button>
             </p>
             <section class="donnees">
-                <p class="intithisto">Dernier relevé  le {{ data[0].Date.strftime('%d-%m-%Y') }} à {{ data[0].Date.strftime('%H:%M:%S') }}</p>
+                <p class="intithisto">Les alertes</p>
                 <section class="relevesonde">
+                    <p>Vous avez ... alertes</p>
                     {% for elt in data %}
-                    <p>{{ elt.Date }}  Humidité : {{ elt.Hum }}% | Température : {{ elt.Temp }}°C</p>
+                    <p>Alerte n°... : {{ elt.type }} {{ elt.ope }} {{ elt.niv }}</p>
                     {% endfor %}
                 </section>
             </section>
