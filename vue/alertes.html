@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+    <head>
+      <title>{{ title }}</title>
+      <meta charset="utf-8">
+      <meta http-equiv="refresh" content="64">
+      <link rel="stylesheet" href="static/css/styles.css">
+    </head>
+    <body>
+        <div class="cadrehist">
+            <p class="btnTHH">
+                <button class="btn" type="button">Température</button>
+                <button class="btn" type="button">Humidité</button>
+                <button class="btn" type="button">Historique</button>
+            </p>
+            <section class="donnees">
+                <p class="intithisto">Les alertes</p>
+                <section class="relevesonde">
+                    <p>Vous avez ... alertes</p>
+                    {% for elt in data %}
+                    <p>Alerte n°... : {{ elt.type }} {{ elt.ope }} {{ elt.niv }}</p>
+                    {% endfor %}
+                </section>
+            </section>
+        </div>
+    </body>
+</html>

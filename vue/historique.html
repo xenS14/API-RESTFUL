@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+    <head>
+      <title>{{ title }}</title>
+      <meta charset="utf-8">
+      <meta http-equiv="refresh" content="5">
+      <link rel="stylesheet" href="static/css/styles.css">
+    </head>
+    <body>
+        <div class="cadrehist">
+            <p class="btnTHH">
+                <button class="btn" type="button">Température</button>
+                <button class="btn" type="button">Humidité</button>
+                <button class="btn" type="button">Historique</button>
+            </p>
+            <section class="donnees">
+                <p class="intithisto">Dernier relevé  le {{ data[0].Date.strftime('%d-%m-%Y') }} à {{ data[0].Date.strftime('%H:%M:%S') }}</p>
+                <section class="relevesonde">
+                    {% for elt in data %}
+                    <p>{{ elt.Date }}  Humidité : {{ elt.Hum }}% | Température : {{ elt.Temp }}°C</p>
+                    {% endfor %}
+                </section>
+            </section>
+        </div>
+    </body>
+</html>

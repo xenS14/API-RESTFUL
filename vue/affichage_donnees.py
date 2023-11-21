@@ -3,9 +3,9 @@ from modele.methodes_metiers import *
 from modele.var_globale import *
 
 
-def creer_app():
-    app = Flask(__name__, template_folder="")
-    return app
+# def creer_app():
+#     app = Flask(__name__, template_folder="")
+#     return app
 
 
 def lancer_app():
