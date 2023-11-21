@@ -1,7 +1,10 @@
+import threading
+import sys
+
+sys.path.append("D:\Git repo\API-RESTFUL")
+from vue.affichage_donnees import *
 from modele.methodes_metiers import *
 from modele.var_globale import *
-from vue.affichage_donnees import *
-import threading
 
 # Lance la connexion à la base de données
 conn = connexion_bdd(user, host, db)

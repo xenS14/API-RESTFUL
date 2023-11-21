@@ -9,22 +9,21 @@ def creer_app():
 
 
 def lancer_app():
-
     app = Flask(__name__, template_folder="")
 
-    @app.route('/')
+    @app.route("/")
     def accueil():
         connexion = connexion_bdd(user, host, db)
         data = recup_cinq_releves_sonde(connexion, 62190434)
         connexion_ferme(connexion)
-        return render_template('accueil.html', title='Accueil', data=data)
-    
-    @app.route('/historique')
+        return render_template("accueil.html", title="Accueil", data=data)
+
+    @app.route("/container")
     def historique():
         connexion = connexion_bdd(user, host, db)
         data = recup_cinq_releves_sonde(connexion, 62190434)
         connexion_ferme(connexion)
-        return render_template('historique.html', title='Historique des relevés', data=data)
-    
+        return render_template("container/template.html", title="Container", data=data)
+
     if __name__ == "vue.affichage_donnees":
-            app.run(debug=True)
+        app.run(debug=True)
