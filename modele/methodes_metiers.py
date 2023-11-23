@@ -76,19 +76,12 @@ def ajout_releve_sonde(connexion, datas: tuple[list, dict]):
             f"INSERT INTO sonde_has_releve (`Sonde_idSonde`, `Releve_idReleve`, `Temperature`, `Humidite`, "
             f"`Niveau_batterie`, `Signal_RSSI`) "
             f"VALUES ('{datas[i]['idSonde']}', {datas[i]['idReleve']}, {datas[i]['Temperature']}, '{datas[i]['Humidite']}', "
-<<<<<<< HEAD
             f"{datas[i]['Niveau_batterie']}, {datas[i]['rssi']})")
         try:
             cursor.execute(req)
             connexion.commit()
         except:
             print("Le relevé de sonde n'a pas pu être ajouté")
-=======
-            f"{datas[i]['Niveau_batterie']}, {datas[i]['rssi']})"
-        )
-        cursor.execute(req)
-        connexion.commit()
->>>>>>> f46cf362407b198abba6b0ace41676a2b1c1de88
     cursor.close()
 
 
@@ -96,7 +89,6 @@ def ajout_releve(connexion, datas: tuple[list, dict]):
     """Ajoute les relevés passés en paramètre dans la base de données"""
     cursor = connexion.cursor()
     for i in range(len(datas)):
-<<<<<<< HEAD
         req = (f"INSERT INTO `releve` (`idReleve`, `Date_releve`) VALUES ({datas[i]['id']}, {datas[i]['date']})")
         try:
             cursor.execute(req)
@@ -110,16 +102,6 @@ def upd_sonde(connexion, sonde: dict):
     """
     Modifie la sonde passée en paramètre
     """
-=======
-        req = f"INSERT INTO `releve` (`idReleve`, `Date_releve`) VALUES ({datas[i]['id']}, {datas[i]['date']})"
-        cursor.execute(req)
-        connexion.commit()
-    cursor.close()
-
-
-def ajout_sonde(connexion, sonde: dict):
-    """Ajoute les sondes passées en paramètre dans la base de données"""
->>>>>>> f46cf362407b198abba6b0ace41676a2b1c1de88
     cursor = connexion.cursor()
     req = f"UPDATE `sonde` SET `Nom`='{sonde['nom']}', `Active`='{sonde['statut']}' WHERE idsonde = {sonde['id']}"
     cursor.execute(req)
@@ -223,17 +205,16 @@ def get_cinq_alertes(connexion) -> list:
     return: Liste des sondes au format JSON
     """
     cursor = connexion.cursor()
-    cursor.execute("SELECT * FROM alerte LIMIT 5")
+    cursor.execute("SELECT * FROM alerte WHERE Utilisateur_idUtilisateur = 1 LIMIT 5")
     records = cursor.fetchall()
     lesAlertes = []
     for record in records:
-        lesAlertes.append({"id": record[0], "seuil": record[1], "operateur": record[2], "type": record[3], "etat": record[4]})
+        lesAlertes.append({"id": record[0], "seuil": record[1], "operateur": record[2], "type": record[3], "etat": record[4], "freq": record[6]})
     cursor.close()
     return lesAlertes
 
 
 def convertit_date(chaine: str) -> str:
-<<<<<<< HEAD
     """
     Convertit une date du format Ddd, DD MM YYYY HH:MM:SS au format YYYYMMDDHHMMSS
     return: Date convertie
@@ -241,32 +222,15 @@ def convertit_date(chaine: str) -> str:
     tabDate = chaine.split(' ')
     tabHeure = tabDate[4].split(':')
     date = tabDate[3] + leMois[tabDate[2]] + tabDate[1] + tabHeure[0] + tabHeure[1] + tabHeure[2]
-=======
-    """Convertit une date au format Ddd, DD MM YYYY HH:MM:SS en date au format YYYYMMDDHHMMSS"""
-    tabDate = chaine.split(" ")
-    tabHeure = tabDate[4].split(":")
-    date = (
-        tabDate[3]
-        + leMois[tabDate[2]]
-        + tabDate[1]
-        + tabHeure[0]
-        + tabHeure[1]
-        + tabHeure[2]
-    )
->>>>>>> f46cf362407b198abba6b0ace41676a2b1c1de88
     return date
 
 
 def recup_datas_ws(cle: str) -> tuple[list, list]:
-<<<<<<< HEAD
     """
     Récupère les relevés auprès du WebService et les stocke dans un tableau de tableaux
     param cle: Clé de l'account pour se connecter au Webservice
     return: Liste des relevés
     """
-=======
-    """Récupère les relevés auprès du WebService et les stocke dans un tableau de tableaux"""
->>>>>>> f46cf362407b198abba6b0ace41676a2b1c1de88
     response = requests.get(f"http://app.objco.com:8099/?account={cle}&limit=3")
     if response.status_code != 200:
         print("Erreur de connexion")
@@ -302,7 +266,6 @@ def gestion_alerte(conn, lesReleves: list[dict]):
                 envoiMail(conn, alerte["idUser"])
 
 
-<<<<<<< HEAD
 def verif_alerte(conn, alerte: dict, rel: dict) -> bool:
     """ Vérifie si l'alerte doit être envoyée """
     seuilDep = False
@@ -310,25 +273,11 @@ def verif_alerte(conn, alerte: dict, rel: dict) -> bool:
     if alerte["ope"] == ">":
         if alerte["type"] == "Température" and rel["Temperature"] > alerte["niv"]:
                 seuilDep = True
-=======
-def verif_alerte(alerte: dict, rel: dict) -> bool:
-    """Vérifie si l'alerte doit être envoyée"""
-    seuilDep = False
-    dateOk = False
-    if alerte["ope"] == ">":
-        if alerte["type"] == "Temperature" and rel["Temperature"] > alerte["niv"]:
-            seuilDep = True
->>>>>>> f46cf362407b198abba6b0ace41676a2b1c1de88
         elif alerte["type"] == "Humidité" and rel["Humidite"] > alerte["niv"]:
             seuilDep = True
     else:
-<<<<<<< HEAD
         if alerte["type"] == "Température" and rel["Temperature"] < alerte["niv"]:
                 seuilDep = True
-=======
-        if alerte["type"] == "Temperature" and rel["Temperature"] < alerte["niv"]:
-            seuilDep = True
->>>>>>> f46cf362407b198abba6b0ace41676a2b1c1de88
         elif alerte["type"] == "Humidité" and rel["Humidite"] < alerte["niv"]:
             seuilDep = True
     # Si le seuil d'alerte a été dépassé
@@ -338,14 +287,7 @@ def verif_alerte(alerte: dict, rel: dict) -> bool:
             dateOk = True
         # Sinon, calcule si l'intervalle est dépassé
         else:
-<<<<<<< HEAD
             dateOk = check_delai(conn, alerte["d_envoi"])
-=======
-            """
-            Si alerte["freq"] + alerte["d_envoi"] > date/heure de maintenant
-            dateOk = True
-            """
->>>>>>> f46cf362407b198abba6b0ace41676a2b1c1de88
         # Si le seuil est dépassé ainsi que l'intervalle
         if dateOk == True:
             return True
@@ -365,13 +307,9 @@ def check_delai(conn, dernierEnvoi) -> bool:
 
 
 def envoiMail(conn, idUser: int):
-<<<<<<< HEAD
     """
     Envoi le mail à l'utilisateur
     """
-=======
-    """Envoi le mail à l'utilisateur"""
->>>>>>> f46cf362407b198abba6b0ace41676a2b1c1de88
 
 
 def recup_alertes(conn) -> list[dict]:

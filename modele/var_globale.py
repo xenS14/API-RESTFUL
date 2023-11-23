@@ -1,5 +1,5 @@
 # Données pour la connexion à la BDD
-user = "root"
+user = "manu"
 host = "localhost"
 db = "iot"
 

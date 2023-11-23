@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="fr">
-<<<<<<< HEAD
     <head>
         <meta charset="UTF-8">
         <link rel="stylesheet" href="static/css/styles.css">
@@ -9,9 +8,6 @@
     <body>
         <p>
             <button class='btn' onclick="window.location='http://127.0.0.1:5000/historique'" type="button">Historique</button>
-        </p>
-        <p>
-            <button class='btn' onclick="window.location='http://127.0.0.1:5000/param_alertes'" type="button">Param alertes</button>
         </p>
         {% if data|length > 0 %}
         <h1>Sonde n°{{ data[0].idSonde }}</h1>
@@ -25,42 +21,3 @@
         {% endif %}
     </body>
 </html>
-=======
-
-<head>
-    <meta charset="UTF-8">
-    <link rel="stylesheet" href="static/css/styles.css">
-    <title>{{title}}</title>
-</head>
-
-<body>
-    <div class="map_section">
-        <h2 class="card_title">Où se situe la sonde ?</h2>
-        <iframe class="map"
-            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d22622.91321106876!2d-0.5949588604491984!3d44.86506029999998!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xd54d679fc16d979%3A0x53db14bce1eb09fc!2sCampus%20CESI!5e0!3m2!1sfr!2sfr!4v1698315027348!5m2!1sfr!2sfr"
-            width="350" height="300" style="border:0;" allowfullscreen="" loading="eager"
-            referrerpolicy="no-referrer-when-downgrade"></iframe>
-    </div>
-    <iframe src="historique" width="350" height="300" style="border:0;" allowfullscreen="" loading="eager"
-        referrerpolicy="no-referrer-when-downgrade"></iframe>
-    <div class="values_1"></div>
-    <div class="values_2"></div>
-    </div>
-
-    {% if data|length > 0 %}
-    <h1>Sonde n°{{ data[0].idSonde }}</h1>
-    {% for elt in data %}
-    <p>- Relevé n°{{ elt.idReleve }}, le {{ elt.Date }} | Température : {{ elt.Temp }}°C | Humidité : {{ elt.Hum }}%
-        | Batterie : {{ elt.Batt }}V | Signal RSSI : {{ elt.RSSI }}dBm
-    </p>
-    {% endfor %}
-    {% else %}
-    <p></p>
-    {% endif %}
-</body>
-
-</html>
-<h1>Titre</h1>
-
-<p>Hello World 2</p>
->>>>>>> f46cf362407b198abba6b0ace41676a2b1c1de88
