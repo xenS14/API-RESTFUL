@@ -9,6 +9,9 @@
         <p>
             <button class='btn' onclick="window.location='http://127.0.0.1:5000/historique'" type="button">Historique</button>
         </p>
+        <p>
+            <button class='btn' onclick="window.location='http://127.0.0.1:5000/param_alertes'" type="button">Param alertes</button>
+        </p>
         {% if data|length > 0 %}
         <h1>Sonde n°{{ data[0].idSonde }}</h1>
             {% for elt in data %}
@@ -21,6 +24,3 @@
         {% endif %}
     </body>
 </html>
-<h1>Titre</h1>
-
-<p>Hello World 2</p>

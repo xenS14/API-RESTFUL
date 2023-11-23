@@ -1,8 +1,6 @@
 import requests
 import mysql.connector
 import time
-from flask import Flask
-from datetime import datetime
 from modele.var_globale import *
 
 
@@ -67,8 +65,11 @@ def ajout_releve_sonde(connexion, datas: tuple[list, dict]):
             f"`Niveau_batterie`, `Signal_RSSI`) "
             f"VALUES ('{datas[i]['idSonde']}', {datas[i]['idReleve']}, {datas[i]['Temperature']}, '{datas[i]['Humidite']}', "
             f"{datas[i]['Niveau_batterie']}, {datas[i]['rssi']})")
-        cursor.execute(req)
-        connexion.commit()
+        try:
+            cursor.execute(req)
+            connexion.commit()
+        except:
+            print("Le relevé de sonde n'a pas pu être ajouté")
     cursor.close()
 
 
@@ -77,18 +78,32 @@ def ajout_releve(connexion, datas: tuple[list, dict]):
     cursor = connexion.cursor()
     for i in range(len(datas)):
         req = (f"INSERT INTO `releve` (`idReleve`, `Date_releve`) VALUES ({datas[i]['id']}, {datas[i]['date']})")
-        cursor.execute(req)
-        connexion.commit()
+        try:
+            cursor.execute(req)
+            connexion.commit()
+        except:
+            print("Le relevé n'a pas pu être ajouté")
     cursor.close()
 
 
-def ajout_sonde(connexion, sonde: dict):
-    """ Ajoute les sondes passées en paramètre dans la base de données """
+def upd_sonde(connexion, sonde: dict):
+    """
+    Modifie la sonde passée en paramètre
+    """
     cursor = connexion.cursor()
-    req = f"INSERT INTO `sonde`(`idSonde`, `Nom`, `Inactif`) VALUES ('{sonde['id']}', '', {sonde['statut']})"
+    req = f"UPDATE `sonde` SET `Nom`='{sonde['nom']}', `Active`='{sonde['statut']}' WHERE idsonde = {sonde['id']}"
     cursor.execute(req)
     connexion.commit()
     cursor.close()
+
+
+# def ajout_sonde(connexion, sonde: dict):
+#     """ Ajoute les sondes passées en paramètre dans la base de données """
+#     cursor = connexion.cursor()
+#     req = f"INSERT INTO `sonde`(`idSonde`, `Nom`, `Active`) VALUES ('{sonde['id']}', '', {sonde['statut']})"
+#     cursor.execute(req)
+#     connexion.commit()
+#     cursor.close()
 
 
 def del_sonde(connexion, sonde: str):
@@ -117,13 +132,36 @@ def recup_anciens_rel(connexion) -> list:
     lesId = []
     for record in records:
         lesId.append(record[0])
+    cursor.close()
     return lesId
+
+
+def get_cinq_dernier_releve(connexion, sonde: str, type: str):
+    """
+    Récupère les 5 derniers relevés pour les retourner au format JSON à l'application Web
+    parm connexion: Connexion à la BDD
+    param sonde: Id de la sonde
+    param type: Type d'info ("Temperature" ou "Humidite")
+    return: 5 derniers relevés de la sonde au format JSON
+    """
+    tabReleves = []
+    cursorRel = connexion.cursor()
+    cursorRelS = connexion.cursor()
+    cursorRelS.execute(f"SELECT {type}, Releve_idReleve FROM sonde_has_releve WHERE Sonde_idSonde = {sonde} ORDER BY Releve_idReleve DESC LIMIT 5")
+    records = cursorRelS.fetchall()
+    for record in records:
+        cursorRel.execute(f"SELECT * FROM releve WHERE idReleve = {record[1]}")
+        date = cursorRel.fetchone()[1]
+        tabReleves.append({"id": record[1], "date": date.strftime("%Y-%m-%d %H:%M:%S"), "valeur": record[0]})
+    cursorRel.close()
+    cursorRelS.close()
+    return tabReleves
 
 
 def recup_liste_capteurs(connexion) -> list:
     """ Récupère la liste des sondes enregistrées dans la base de données """
     cursor = connexion.cursor()
-    cursor.execute("SELECT idSonde FROM sonde WHERE Inactif = 0")
+    cursor.execute("SELECT idSonde FROM sonde WHERE Active = 1")
     records = cursor.fetchall()
     lesSondes = []
     for record in records:
@@ -132,8 +170,43 @@ def recup_liste_capteurs(connexion) -> list:
     return lesSondes
 
 
+def get_sondes(connexion) -> list:
+    """
+    Récupère la liste des sondes et la retourne au format JSON
+    param connexion: Connexion à la BDD
+    return: Liste des sondes au format JSON
+    """
+    cursor = connexion.cursor()
+    cursor.execute("SELECT * FROM sonde")
+    records = cursor.fetchall()
+    lesSondes = []
+    for record in records:
+        lesSondes.append({"id": record[0], "nom": record[1], "etat": record[2]})
+    cursor.close()
+    return lesSondes
+
+
+def get_cinq_alertes(connexion) -> list:
+    """
+    Récupère la liste des sondes et la retourne au format JSON
+    param connexion: Connexion à la BDD
+    return: Liste des sondes au format JSON
+    """
+    cursor = connexion.cursor()
+    cursor.execute("SELECT * FROM alerte LIMIT 5")
+    records = cursor.fetchall()
+    lesAlertes = []
+    for record in records:
+        lesAlertes.append({"id": record[0], "seuil": record[1], "operateur": record[2], "type": record[3], "etat": record[4]})
+    cursor.close()
+    return lesAlertes
+
+
 def convertit_date(chaine: str) -> str:
-    """ Convertit une date au format Ddd, DD MM YYYY HH:MM:SS en date au format YYYYMMDDHHMMSS """
+    """
+    Convertit une date du format Ddd, DD MM YYYY HH:MM:SS au format YYYYMMDDHHMMSS
+    return: Date convertie
+    """
     tabDate = chaine.split(' ')
     tabHeure = tabDate[4].split(':')
     date = tabDate[3] + leMois[tabDate[2]] + tabDate[1] + tabHeure[0] + tabHeure[1] + tabHeure[2]
@@ -141,7 +214,11 @@ def convertit_date(chaine: str) -> str:
 
 
 def recup_datas_ws(cle: str) -> tuple[list, list]:
-    """ Récupère les relevés auprès du WebService et les stocke dans un tableau de tableaux """
+    """
+    Récupère les relevés auprès du WebService et les stocke dans un tableau de tableaux
+    param cle: Clé de l'account pour se connecter au Webservice
+    return: Liste des relevés
+    """
     response = requests.get(f"http://app.objco.com:8099/?account={cle}&limit=3")
     if response.status_code != 200:
         print("Erreur de connexion")
@@ -153,6 +230,17 @@ def recup_datas_ws(cle: str) -> tuple[list, list]:
     return liste_releves
 
 
+def cree_alerte(conn, dicoDonnees):
+    """
+    Enregistre l'alerte dans la base de données
+    """
+    cursor = conn.cursor()
+    req = f"INSERT INTO alerte (Niv, Operateur, Type, Actif, Utilisateur_idUtilisateur, frequence_envoi_mail) VALUES({dicoDonnees[0]}, \">\", \"Humidité\", 1, 1, {dicoDonnees[1]})"
+    cursor.execute(req)
+    conn.commit()
+    cursor.close()
+
+
 def gestion_alerte(conn, lesReleves: list[dict]):
     """ Gère l'envoi des alertes """
     """ Ne fait pas encore le lien entre Sonde et Alerte """
@@ -162,21 +250,21 @@ def gestion_alerte(conn, lesReleves: list[dict]):
     for releve in lesReleves:
         for alerte in lesAlertes:
             # Vérifie si le seuil est déclenché
-            if verif_alerte(alerte, releve):
+            if verif_alerte(conn, alerte, releve):
                 envoiMail(conn, alerte["idUser"])
 
 
-def verif_alerte(alerte: dict, rel: dict) -> bool:
+def verif_alerte(conn, alerte: dict, rel: dict) -> bool:
     """ Vérifie si l'alerte doit être envoyée """
     seuilDep = False
     dateOk = False
     if alerte["ope"] == ">":
-        if alerte["type"] == "Temperature" and rel["Temperature"] > alerte["niv"]:
+        if alerte["type"] == "Température" and rel["Temperature"] > alerte["niv"]:
                 seuilDep = True
         elif alerte["type"] == "Humidité" and rel["Humidite"] > alerte["niv"]:
                 seuilDep = True
     else:
-        if alerte["type"] == "Temperature" and rel["Temperature"] < alerte["niv"]:
+        if alerte["type"] == "Température" and rel["Temperature"] < alerte["niv"]:
                 seuilDep = True
         elif alerte["type"] == "Humidité" and rel["Humidite"] < alerte["niv"]:
                 seuilDep = True
@@ -187,18 +275,29 @@ def verif_alerte(alerte: dict, rel: dict) -> bool:
             dateOk = True
         # Sinon, calcule si l'intervalle est dépassé
         else:
-            """
-            Si alerte["freq"] + alerte["d_envoi"] > date/heure de maintenant 
-            dateOk = True
-            """
+            dateOk = check_delai(conn, alerte["d_envoi"])
         # Si le seuil est dépassé ainsi que l'intervalle
         if dateOk == True:
             return True
     return False
 
 
+def check_delai(conn, dernierEnvoi) -> bool:
+    """
+    Vérifie le délai entre le dernier envoi et la date/heure actuelle
+    """
+    """
+    if alerte["freq"] + alerte["d_envoi"] > date/heure de maintenant:
+        return True
+    else:
+        return False
+    """
+
+
 def envoiMail(conn, idUser: int):
-    """ Envoi le mail à l'utilisateur """
+    """
+    Envoi le mail à l'utilisateur
+    """
 
 
 def recup_alertes(conn) -> list[dict]:
@@ -271,8 +370,11 @@ def lance_procedure_recup(conn):
         ajout_releve(conn, rel)
         ajout_releve_sonde(conn, rel_sonde)
 
+        rel = []
+        rel_sonde = []
+
         # Gère l'envoi des alertes en cas de seuil dépassé
         # gestion_alerte(conn, rel_sonde)
 
         # Attend 5 minutes et 4 secondes
-        time.sleep(64)
+        time.sleep(61)

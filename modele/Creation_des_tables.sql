@@ -119,6 +119,7 @@ ALTER TABLE alerte
   ADD UNIQUE KEY idAlerte_UNIQUE (idAlerte),
   ADD KEY fk_Alerte_Utilisateur1_idx (Utilisateur_idUtilisateur);
 
+
 --
 -- Index pour la table releve
 --

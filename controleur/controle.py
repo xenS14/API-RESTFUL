@@ -3,11 +3,9 @@ from modele.var_globale import *
 from vue.affichage_donnees import *
 import threading
 
+
 # Lance la connexion à la base de données
 conn = connexion_bdd(user, host, db)
-
-# Récupère la clé de connexion au Webservice
-cle = recup_acc_api(conn)
 
 # Création d'un Thread pour la procédure de récupération et stockage des données
 threading.Thread(target=lance_procedure_recup, args=(conn,)).start()

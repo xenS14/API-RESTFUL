@@ -1,11 +1,6 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request, url_for, redirect, session
 from modele.methodes_metiers import *
 from modele.var_globale import *
-
-
-# def creer_app():
-#     app = Flask(__name__, template_folder="")
-#     return app
 
 
 def lancer_app():
@@ -33,5 +28,17 @@ def lancer_app():
         connexion_ferme(connexion)
         return render_template('alertes.html', title='Liste des alertes', data=data)
     
+    @app.route('/param_alertes', methods = ['GET', 'POST'])
+    def param_alertes():
+        if request.method == "GET":
+            return render_template('param_alertes.html', title='Définition d\'une alerte')
+        elif request.method == "POST":
+            tabDonnees = [request.form["hum"], request.form["freq"]]
+            connexion = connexion_bdd(user, host, db)
+            cree_alerte(connexion, tabDonnees)
+            data = recup_cinq_releves_sonde(connexion, 62190434)
+            connexion_ferme(connexion)
+            return redirect(url_for('accueil', data=data))
+            
     if __name__ == "vue.affichage_donnees":
             app.run(debug=True)

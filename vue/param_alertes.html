@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+    <head>
+      <title>{{ title }}</title>
+      <meta charset="utf-8">
+      <link rel="stylesheet" href="static/css/styles.css">
+    </head>
+    <body>
+        <div class="cadrehist">
+            <form method="POST" action="">
+            <p class="btnTHH">
+                <button class="btn" type="button">Humidité</button>
+            </p>
+            <p>
+                <input type="button" class="btnSensGauche" type="button" value=">"/>
+                <input type="button" class="btnSensDroite" type="button" value="<"/>
+            </p>
+            <p>
+                <label>Seuil : </label>
+                <input name="hum" type="number" min="-6" max="45" placeholder="% humidité" class="humid" />
+            </p>
+            <p>
+                <label>Fréquence : </label>
+                <input name="freq" type="number" min="1" max="24" placeholder="Fréquence (heures)" class="humid" />
+            </p>
+            <p>
+                <input class="btn" type="submit" value="Enregistrer"></input>
+            </p>
+            </form>
+        </div>
+    </body>
+</html>
