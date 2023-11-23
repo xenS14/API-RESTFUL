@@ -25,10 +25,9 @@ CREATE TABLE alerte (
   Operateur varchar(2) DEFAULT NULL,
   Type varchar(45) DEFAULT NULL,
   Actif tinyint DEFAULT NULL,
-  Utilisateur_idUtilisateur int NOT NULL,
+  Utilisateur_idUtilisateur int NOT NULL DEFAULT '1',
   frequence_envoi_mail varchar(45) DEFAULT NULL,
-  Sonde_has_Releve_Sonde_idSonde varchar(8) NOT NULL,
-  Sonde_has_Releve_Releve_idReleve int NOT NULL
+  dernier_envoi datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 
 -- --------------------------------------------------------
@@ -44,6 +43,8 @@ CREATE TABLE releve (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 
 
+-- --------------------------------------------------------
+
 --
 -- Structure de la table sonde
 --
@@ -52,9 +53,36 @@ DROP TABLE IF EXISTS sonde;
 CREATE TABLE sonde (
   idSonde varchar(8) NOT NULL,
   Nom varchar(45) DEFAULT NULL,
-  Inactif tinyint NOT NULL
+  Active tinyint NOT NULL DEFAULT '1'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 
+--
+-- Déchargement des données de la table sonde
+--
+
+INSERT INTO sonde (idSonde, Nom, Active) VALUES
+('06190485', '', 1),
+('62182233', '', 1),
+('62190434', '', 1);
+
+-- --------------------------------------------------------
+
+--
+-- Structure de la table sonde_has_releve
+--
+
+DROP TABLE IF EXISTS sonde_has_releve;
+CREATE TABLE sonde_has_releve (
+  Sonde_idSonde varchar(8) NOT NULL,
+  Releve_idReleve int NOT NULL,
+  Temperature double DEFAULT NULL,
+  Humidite varchar(5) DEFAULT NULL,
+  Niveau_batterie double DEFAULT NULL,
+  Signal_RSSI int DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+
+
+-- --------------------------------------------------------
 
 --
 -- Structure de la table utilisateur
@@ -63,7 +91,7 @@ CREATE TABLE sonde (
 DROP TABLE IF EXISTS utilisateur;
 CREATE TABLE utilisateur (
   idUtilisateur int NOT NULL,
-  Prénom varchar(45) DEFAULT NULL,
+  Prenom varchar(45) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci DEFAULT NULL,
   Nom varchar(45) DEFAULT NULL,
   Numero_telephone varchar(13) DEFAULT NULL,
   Email varchar(60) DEFAULT NULL,
@@ -76,7 +104,7 @@ CREATE TABLE utilisateur (
 -- Déchargement des données de la table utilisateur
 --
 
-INSERT INTO utilisateur (idUtilisateur, Prénom, Nom, Numero_telephone, Email, Identifiant, Mot_de_passe, account_API) VALUES
+INSERT INTO utilisateur (idUtilisateur, Prenom, Nom, Numero_telephone, Email, Identifiant, Mot_de_passe, account_API) VALUES
 (1, 'Jack', 'THIEM', NULL, NULL, NULL, NULL, '16L1SPQZS3');
 
 --
@@ -89,8 +117,7 @@ INSERT INTO utilisateur (idUtilisateur, Prénom, Nom, Numero_telephone, Email, I
 ALTER TABLE alerte
   ADD PRIMARY KEY (idAlerte),
   ADD UNIQUE KEY idAlerte_UNIQUE (idAlerte),
-  ADD KEY fk_Alerte_Utilisateur1_idx (Utilisateur_idUtilisateur),
-  ADD KEY fk_Alerte_Sonde_has_Releve1_idx (Sonde_has_Releve_Sonde_idSonde,Sonde_has_Releve_Releve_idReleve);
+  ADD KEY fk_Alerte_Utilisateur1_idx (Utilisateur_idUtilisateur);
 
 --
 -- Index pour la table releve
