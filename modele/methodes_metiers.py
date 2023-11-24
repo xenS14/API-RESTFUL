@@ -359,7 +359,7 @@ def trt_chaine(conn, liste_releves: list) -> tuple[list, list]:
                     volt = convert_hexa(chaine[pos + 10 : pos + 14]) / 1000  # Voltage
                     temp = convert_hexa(chaine[pos + 16 : pos + 18]) / 10  # Température
                     signeTemp = chaine[pos + 14 : pos + 16]  # Signe de la température (+ ou -)
-                    temp = float("-" + str(temp)) if signeTemp == "1" else float(temp)
+                    temp = float("-" + str(temp)) if signeTemp == "40" else float(temp)
                     humid = convert_hexa(chaine[pos + 18 : pos + 20])  # Taux d'humidité
                     humid = "" if humid == 255 else str(humid)
                     rssi = "-" + str(convert_hexa(chaine[pos + 20 : pos + 22]))  # RSSI
