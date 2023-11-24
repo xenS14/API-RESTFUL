@@ -72,9 +72,7 @@ def ajout_releve_sonde(connexion, datas: tuple[list, dict]):
     """Ajoute les relevés de sonde passés en paramètre dans la base de données"""
     cursor = connexion.cursor()
     for i in range(len(datas)):
-        req = (
-            f"INSERT INTO sonde_has_releve (`Sonde_idSonde`, `Releve_idReleve`, `Temperature`, `Humidite`, "
-            f"`Niveau_batterie`, `Signal_RSSI`) "
+        req = (f"INSERT INTO sonde_has_releve (`Sonde_idSonde`, `Releve_idReleve`, `Temperature`, `Humidite`, `Niveau_batterie`, `Signal_RSSI`) "
             f"VALUES ('{datas[i]['idSonde']}', {datas[i]['idReleve']}, {datas[i]['Temperature']}, '{datas[i]['Humidite']}', "
             f"{datas[i]['Niveau_batterie']}, {datas[i]['rssi']})")
         try:
@@ -360,9 +358,7 @@ def trt_chaine(conn, liste_releves: list) -> tuple[list, list]:
                 if pos != -1:
                     volt = convert_hexa(chaine[pos + 10 : pos + 14]) / 1000  # Voltage
                     temp = convert_hexa(chaine[pos + 16 : pos + 18]) / 10  # Température
-                    signeTemp = convert_hexa(
-                        chaine[pos + 15 : pos + 16]
-                    )  # Signe de la température (+ ou -)
+                    signeTemp = chaine[pos + 14 : pos + 16]  # Signe de la température (+ ou -)
                     temp = float("-" + str(temp)) if signeTemp == "1" else float(temp)
                     humid = convert_hexa(chaine[pos + 18 : pos + 20])  # Taux d'humidité
                     humid = "" if humid == 255 else str(humid)
@@ -380,25 +376,8 @@ def trt_chaine(conn, liste_releves: list) -> tuple[list, list]:
                         }
                     )
                     # Affiche dans la console les relevés récupérés
-                    print(
-                        "Capteur n° "
-                        + str(chaine[pos : pos + 8])
-                        + " || Relevé n° : "
-                        + str(releve[0])
-                        + " || "
-                        + str(releve[2])
-                    )
-                    print(
-                        "Voltage : "
-                        + str(volt)
-                        + "V || Température : "
-                        + str(temp)
-                        + "°C || Humidité : "
-                        + humid
-                        + "% || RSSI : "
-                        + str(rssi)
-                        + "dBm\n"
-                    )
+                    print("Capteur n° " + str(chaine[pos : pos + 8]) + " || Relevé n° : " + str(releve[0]) + " || " + str(releve[2]))
+                    print("Voltage : " + str(volt) + "V || Température : " + str(temp) + "°C || Humidité : " + humid + "% || RSSI : " + str(rssi) + "dBm\n")
     return les_releves, les_rel_sonde
 
 
