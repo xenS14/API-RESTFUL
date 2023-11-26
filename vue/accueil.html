@@ -6,8 +6,39 @@
         <title>{{title}}</title>
     </head>
     <body>
+        <script>
+            console.log("Valeur :", lesTemp)
+        </script>
         <p>
             <button class='btn' onclick="window.location='http://127.0.0.1:5000/historique'" type="button">Historique</button>
+        </p>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
+        <canvas id="myChart" style="width:100%;max-width:800px"></canvas>
+        <p>
+            <script>   
+                let xValues = ["{{data[4].Date}}","{{data[3].Date}}","{{data[2].Date}}","{{data[1].Date}}","{{data[0].Date}}"];
+                let yValues = ["{{data[4].Temp}}","{{data[3].Temp}}","{{data[2].Temp}}","{{data[1].Temp}}","{{data[0].Temp}}"];
+
+                new Chart("myChart", {
+                type: "line",
+                data: {
+                    labels: xValues,
+                    datasets: [{
+                    fill: false,
+                    lineTension: 0,
+                    backgroundColor: "rgba(0,0,255,1.0)",
+                    borderColor: "rgba(0,0,255,0.1)",
+                    data: yValues
+                    }]
+                },
+                options: {
+                    legend: {display: false},
+                    scales: {
+                    yAxes: [{ticks: {min: 12, max:14}}],
+                    }
+                }
+                });
+            </script>
         </p>
         {% if data|length > 0 %}
         <h1>Sonde n°{{ data[0].idSonde }}</h1>
@@ -17,7 +48,7 @@
             </p>
             {% endfor %}
         {% else %}
-            <p></p>
+            <p>Il n'y a pas de données à afficher.</p>
         {% endif %}
     </body>
 </html>

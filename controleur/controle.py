@@ -1,5 +1,4 @@
 import threading
-import sys
 from vue.affichage_donnees import *
 from modele.methodes_metiers import *
 from modele.var_globale import *

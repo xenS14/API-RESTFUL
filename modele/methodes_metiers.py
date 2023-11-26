@@ -40,17 +40,37 @@ def recup_cinq_releves_sonde(connexion, sonde):
     records = cursor.fetchall()
     lesRelSonde = []
     for record in records:
-        lesRelSonde.append(
-            {
-                "idSonde": record[0],
-                "idReleve": record[1],
-                "Temp": record[2],
-                "Hum": record[3],
-                "Batt": record[4],
-                "RSSI": record[5],
-                "Date": record[6],
-            }
-        )
+        lesRelSonde.append({"idSonde": record[0],"idReleve": record[1],"Temp": record[2],"Hum": record[3],"Batt": record[4],"RSSI": record[5],"Date": record[6].strftime("%d-%m-%Y %H:%M:%S")})
+    cursor.close()
+    return lesRelSonde
+
+
+def recup_des_releves_de_sonde(connexion, sonde, nbreleve):
+    """Récupère les derniers relevés pour une sonde donnée"""
+    cursor = connexion.cursor()
+    cursor.execute("SELECT sonde.Nom, sr.Temperature, sr.Humidite, releve.Date_releve FROM sonde_has_releve AS sr "
+                   "INNER JOIN sonde ON sonde.idSonde = sr.Sonde_idSonde "
+                   "INNER JOIN releve ON releve.idReleve = sr.Releve_idReleve "
+                   f"WHERE Sonde_idSonde = {sonde} ORDER BY Releve_idReleve DESC LIMIT {nbreleve}")
+    records = cursor.fetchall()
+    lesRelSonde = []
+    for record in records:
+        lesRelSonde.append({"nom": record[0],"temp": record[1],"humid": record[2], "date": record[3].strftime("%d-%m-%Y %H:%M:%S")})
+    cursor.close()
+    return lesRelSonde
+
+
+def recup_cinq_releves_sondev2(connexion, sonde):
+    """Récupère les 5 derniers relevés pour une sonde donnée"""
+    cursor = connexion.cursor()
+    cursor.execute("SELECT sonde.Nom, sr.Temperature, sr.Humidite, releve.Date_releve FROM sonde_has_releve AS sr "
+                   "INNER JOIN sonde ON sonde.idSonde = sr.Sonde_idSonde "
+                   "INNER JOIN releve ON releve.idReleve = sr.Releve_idReleve "
+                   f"WHERE Sonde_idSonde = {sonde} ORDER BY Releve_idReleve DESC LIMIT 5")
+    records = cursor.fetchall()
+    lesRelSonde = []
+    for record in records:
+        lesRelSonde.append({"nom": record[0],"temp": record[1],"humid": record[2], "date": record[3].strftime("%d-%m-%Y %H:%M:%S")})
     cursor.close()
     return lesRelSonde
 
@@ -180,6 +200,30 @@ def recup_liste_capteurs(connexion) -> list:
     return lesSondes
 
 
+def dernier_releve_par_sonde(connexion):
+    """
+    Récupère le dernier relevé pour chaque sonde
+    """
+    lesSondes = recup_liste_capteurs(connexion)
+    lesReleves = []
+    for sonde in lesSondes:
+        req = (
+            "SELECT sonde.idSonde, sonde.Nom, sr.Temperature, sr.Humidite, releve.Date_releve "
+            "FROM sonde_has_releve AS sr "
+            "INNER JOIN sonde ON sonde.idSonde = sr.Sonde_idSonde "
+            "INNER JOIN releve ON releve.idReleve = sr.Releve_idReleve "
+            f"WHERE sonde.idSonde = {sonde} "
+            "ORDER BY sr.Releve_idReleve DESC "
+            "LIMIT 1"
+        )
+        cursor = connexion.cursor()
+        cursor.execute(req)
+        record = cursor.fetchone()
+        lesReleves.append({"idsonde": record[0], "nom":record[1], "temp":record[2], "humid":record[3], "date": record[4].strftime("%d-%m-%Y %H:%M:%S")})
+        cursor.close()
+    return lesReleves
+
+
 def get_sondes(connexion) -> list:
     """
     Récupère la liste des sondes et la retourne au format JSON
@@ -196,14 +240,14 @@ def get_sondes(connexion) -> list:
     return lesSondes
 
 
-def get_cinq_alertes(connexion) -> list:
+def get_alertes(connexion) -> list:
     """
-    Récupère la liste des sondes et la retourne au format JSON
+    Récupère la liste des alertes et la retourne
     param connexion: Connexion à la BDD
-    return: Liste des sondes au format JSON
+    return: Liste des alertes
     """
     cursor = connexion.cursor()
-    cursor.execute("SELECT * FROM alerte WHERE Utilisateur_idUtilisateur = 1 LIMIT 5")
+    cursor.execute("SELECT * FROM alerte WHERE Utilisateur_idUtilisateur = 1")
     records = cursor.fetchall()
     lesAlertes = []
     for record in records:

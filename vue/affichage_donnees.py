@@ -1,24 +1,43 @@
-from flask import Flask, render_template, request, url_for, redirect, session
+from flask import Flask, render_template, request, url_for, redirect, session, jsonify
 from modele.methodes_metiers import *
 from modele.var_globale import *
+import json
 
 
 def lancer_app():
     app = Flask(__name__, template_folder="")
 
-    @app.route("/")
+    @app.route("/", methods = ['GET', 'POST'])
     def accueil():
+        if request.method == "GET":
+            connexion = connexion_bdd(user, host, db)
+            data = dernier_releve_par_sonde(connexion)
+            alertes = get_alertes(connexion)
+            connexion_ferme(connexion)
+            return render_template("homepage.html", title="Accueil", data=data, lesalertes=alertes)
+        elif request.method == "POST":
+            print("Méthode POST")
+    
+    @app.route("/<idsonde>")
+    def histo(idsonde):
         connexion = connexion_bdd(user, host, db)
-        data = recup_cinq_releves_sonde(connexion, 62190434)
+        data = recup_cinq_releves_sondev2(connexion, idsonde)
         connexion_ferme(connexion)
-        return render_template("accueil.html", title="Accueil", data=data)
+        return json.dumps(data)
+    
+    @app.route("/<idsonde>/<nbreleve>")
+    def graphe(idsonde, nbreleve):
+        connexion = connexion_bdd(user, host, db)
+        data = recup_des_releves_de_sonde(connexion, idsonde, nbreleve)
+        connexion_ferme(connexion)
+        return json.dumps(data)
 
     @app.route("/container")
     def historique():
         connexion = connexion_bdd(user, host, db)
         data = recup_cinq_releves_sonde(connexion, 62190434)
         connexion_ferme(connexion)
-        return render_template('historique.html', title='Historique des relevés', data=data)
+        return render_template('historique.html', title='Historique des relevés', data=json.dumps(data))
     
     @app.route('/alertes')
     def alertes():

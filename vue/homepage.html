@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="static/css/homepage.css">
+    <title>{{title}}</title>
+</head>
+<header>
+    <div class="header">
+        <h1 class="username">Jack Thiem</h1>
+        <button class="disconnect-btn">Déconnexion</button>
+    </div>
+</header>
+
+<head>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+    <h1 class="map-title">Où se situe la sonde ?</h1>
+    <div class="map-container">
+        <iframe class="map"
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d90493.80973865828!2d-0.668412091779334!3d44.863688174378176!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xd5527e8f751ca81%3A0x796386037b397a89!2sBordeaux!5e0!3m2!1sfr!2sfr!4v1700658614047!5m2!1sfr!2sfr"
+            width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
+    </div>
+    <div class="graph-container">
+        <div class="graph-buttons">
+            <button id="temp-btn" onclick="afficherGraphique('temperature', document.querySelector('input[name=sonde]:checked').value, '12')">Température</button>
+            <button id="hum-btn" onclick="afficherGraphique('humidite', document.querySelector('input[name=sonde]:checked').value, '12')">Humidité</button>
+            <button id="histo-btn" onclick="afficherHistorique(document.querySelector('input[name=sonde]:checked').value)">Historique</button>
+            <fieldset>
+                <legend>Sélectionnez la sonde souhaitée :</legend>
+                <div>
+                {% for i in range(data|length) %}
+                {% if i == 0 %}
+                <input type="radio" id={{ data[i].nom }} name="sonde" value={{ data[i].idsonde }} checked>
+                {% else %}
+                <input type="radio" id={{ data[i].nom }} name="sonde" value={{ data[i].idsonde }}>
+                {% endif %}
+                <label for={{ data[i].nom }}>{{ data[i].nom }}</label>
+                {% endfor %}
+                  <!-- <input type="radio" id="huey" name="drone" value="huey" checked />
+                  <label for="huey">Huey</label>
+                  <input type="radio" id="dewey" name="drone" value="dewey" />
+                  <label for="dewey">Dewey</label>
+                  <input type="radio" id="louie" name="drone" value="louie" />
+                  <label for="louie">Louie</label> -->
+                </div>
+              </fieldset>
+        </div>
+        <div id="monChart">
+            {% if data|length > 0 %}
+                    <div class="divtab">
+                        <p id="presenttab">Les derniers relevés</p>
+            <table class="tabdatas">
+                        <tr>
+                            <td class="coltitre">Sonde</td>
+                            <td class="coltitre">Température</td>
+                            <td class="coltitre">Humidité</td>
+                            <td class="coltitre">Date du relevé</td>
+                        </tr>
+                        {% for elt in data %}
+                        <tr>
+                            <td>{{ elt.nom }}</td>
+                            <td>{{ elt.temp }}°C</td>
+                            {% if elt.humid != '' %}
+                                <td>{{ elt.humid }}%</td>
+                            {% else %}
+                                <td class="sanshumid">-</td>
+                            {% endif %}
+                            <td>{{ elt.date }}</td>
+                        </tr>
+                        {% endfor %}
+                    </table>
+        </div>
+        {% else %}
+        <p>Il n'y a pas de données à afficher.</p>
+        {% endif %}
+        <div>
+            <canvas id="myChart" width="400" height="200"></canvas>
+        </div>
+    </div>
+
+    <h1 class="map-title">Mes alertes</h1>
+    <div class="alerte-container">
+        <p>Vous avez {{ lesalertes|length }} alertes :</p>
+        {% for i in range(lesalertes|length) %}
+            <p>Alerte n°{{ i+1 }} : {{ lesalertes[i].type }}  {{ lesalertes[i].operateur }} {{ lesalertes[i].seuil }} || Envoi toutes les {{ lesalertes[i].freq }} heures.<br></p>
+        {% endfor %}
+    </div>
+
+    <script src="static/js/homepage.js"></script>
+</body>
+<!-- <footer>
+    <h2 class="ip-adress">Adresse IP : 10.133.130.88</h2>
+</footer> -->
