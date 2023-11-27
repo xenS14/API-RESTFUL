@@ -40,54 +40,53 @@
                 {% endif %}
                 <label for={{ data[i].nom }}>{{ data[i].nom }}</label>
                 {% endfor %}
-                  <!-- <input type="radio" id="huey" name="drone" value="huey" checked />
-                  <label for="huey">Huey</label>
-                  <input type="radio" id="dewey" name="drone" value="dewey" />
-                  <label for="dewey">Dewey</label>
-                  <input type="radio" id="louie" name="drone" value="louie" />
-                  <label for="louie">Louie</label> -->
                 </div>
               </fieldset>
         </div>
         <div id="monChart">
             {% if data|length > 0 %}
-                    <div class="divtab">
-                        <p id="presenttab">Les derniers relevés</p>
-            <table class="tabdatas">
-                        <tr>
-                            <td class="coltitre">Sonde</td>
-                            <td class="coltitre">Température</td>
-                            <td class="coltitre">Humidité</td>
-                            <td class="coltitre">Date du relevé</td>
-                        </tr>
-                        {% for elt in data %}
-                        <tr>
-                            <td>{{ elt.nom }}</td>
-                            <td>{{ elt.temp }}°C</td>
-                            {% if elt.humid != '' %}
-                                <td>{{ elt.humid }}%</td>
-                            {% else %}
-                                <td class="sanshumid">-</td>
-                            {% endif %}
-                            <td>{{ elt.date }}</td>
-                        </tr>
-                        {% endfor %}
-                    </table>
-        </div>
-        {% else %}
-        <p>Il n'y a pas de données à afficher.</p>
-        {% endif %}
-        <div>
-            <canvas id="myChart" width="400" height="200"></canvas>
+            <div class="divtab">
+                <p id="presenttab">Les derniers relevés</p>
+                <table class="tabdatas">
+                    <tr>
+                        <td class="coltitre">Sonde</td>
+                        <td class="coltitre">Température</td>
+                        <td class="coltitre">Humidité</td>
+                        <td class="coltitre">Date du relevé</td>
+                    </tr>
+                    {% for elt in data %}
+                    <tr>
+                        <td>{{ elt.nom }}</td>
+                        <td>{{ elt.temp }}°C</td>
+                        {% if elt.humid != '' %}
+                        <td>{{ elt.humid }}%</td>
+                        {% else %}
+                        <td class="sanshumid">-</td>
+                        {% endif %}
+                        <td>{{ elt.date }}</td>
+                    </tr>
+                    {% endfor %}
+                </table>
+                {% else %}
+                <p>Il n'y a pas de données à afficher.</p>
+                {% endif %}
+            </div>
+            <div>
+                <canvas id="myChart" width="400" height="200"></canvas>
+            </div>
         </div>
     </div>
-
-    <h1 class="map-title">Mes alertes</h1>
+        
+        <h1 class="map-title">Mes alertes :</h1>
     <div class="alerte-container">
-        <p>Vous avez {{ lesalertes|length }} alertes :</p>
+        <p class="title-alerte">Vous avez {{ lesalertes|length }} alertes :</p>
         {% for i in range(lesalertes|length) %}
-            <p>Alerte n°{{ i+1 }} : {{ lesalertes[i].type }}  {{ lesalertes[i].operateur }} {{ lesalertes[i].seuil }} || Envoi toutes les {{ lesalertes[i].freq }} heures.<br></p>
+            <p>Alerte n°{{ i+1 }} : {{ lesalertes[i].type }}  {{ lesalertes[i].operateur }} {{ lesalertes[i].seuil }} || Envoi toutes les {{ lesalertes[i].freq }} heures<br></p>
         {% endfor %}
+        <div class="alert-buttons">
+            <button id="voir-plus-btn" onclick="">Voir plus</button>
+            <button id="cree-alerte-btn" onclick="window.location='http://127.0.0.1:5000/param_alertes'">Créer une alerte</button>
+        </div>
     </div>
 
     <script src="static/js/homepage.js"></script>

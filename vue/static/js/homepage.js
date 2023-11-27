@@ -1,43 +1,5 @@
 document.addEventListener('DOMContentLoaded', function () {});
 
-// function afficherDernierReleve() {
-//   fetch(`http://127.0.0.1:5000/`)
-//     .then(response => {
-//       if (!response.ok) {
-//         throw new Error('La requête a échoué avec le statut:' + response.status);
-//       }
-//       return response.json(); // ou response.text() si la réponse n'est pas JSON
-//     })
-//     .then(data => {
-//       let elt = document.getElementById('monChart')
-//       elt.innerHTML = `
-//     <div class="divtab">
-//     <p id="presenttab">Les derniers relevés</p>
-//     <table class="tabdatas">
-//       <tr>
-//         <td class="coltitre">Sonde</td>
-//         <td class="coltitre">Température</td>
-//         <td class="coltitre">Humidité</td>
-//         <td class="coltitre">Date du relevé</td>
-//       </tr>
-//       ${Object.keys(data).map(elt => `
-//         <tr>
-//         <td>${data[elt].nom}</td>
-//         <td>${data[elt].temp}°C</td>
-//         <td>${data[elt].humid}%</td>
-//         <td>${data[elt].date}</td>
-//         </tr>
-//         `).join('')}
-//       </table>
-//     </div>
-//   `;
-//       console.log(data);
-//     })
-//     .catch(error => {
-//       // Gérer les erreurs ici
-//       console.error('Erreur de la requête:', error);
-//     });
-// }
 
 function afficherGraphique(type, sonde, nbreleve) {
   

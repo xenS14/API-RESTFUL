@@ -80,14 +80,25 @@ button {
     justify-content: space-between;
 }
 
+.alert-buttons {
+    margin: 15px 15px;
+    padding-right: 15px;
+    display: flex;
+    justify-content: space-between;
+}
+
 .alerte-container {
     position: relative;
     overflow: hidden;
+    padding-left: 1%;
     padding-bottom: 28%; /* Ratio d'aspect pour une carte Google Maps (hauteur / largeur) */
     height: 0;
     margin: 20px 100px;
     border-radius: 26px;
     background-color: rgb(0, 110, 255);
+    color: white;
+    font-size: 20px;
+    font-weight: bold;
 }
 
 footer {
@@ -136,4 +147,8 @@ td {
     text-align: center;
     font-weight: bold;
     color: #fff;
+}
+
+.title-alerte {
+    text-decoration: underline;
 }
