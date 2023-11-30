@@ -17,7 +17,7 @@ def lancer_app():
             return render_template("homepage.html", title="Accueil", data=data, lesalertes=alertes)
         elif request.method == "POST":
             print("Méthode POST")
-    
+
     @app.route("/<idsonde>")
     def histo(idsonde):
         connexion = connexion_bdd(user, host, db)
@@ -39,12 +39,12 @@ def lancer_app():
         connexion_ferme(connexion)
         return render_template('historique.html', title='Historique des relevés', data=json.dumps(data))
     
-    @app.route('/alertes')
-    def alertes():
-        connexion = connexion_bdd(user, host, db)
-        data = recup_alertes(connexion)
-        connexion_ferme(connexion)
-        return render_template('alertes.html', title='Liste des alertes', data=data)
+    # @app.route('/alertes')
+    # def alertes():
+    #     connexion = connexion_bdd(user, host, db)
+    #     data = recup_alertes(connexion)
+    #     connexion_ferme(connexion)
+    #     return render_template('alertes.html', title='Liste des alertes', data=data)
     
     @app.route('/param_alertes', methods = ['GET', 'POST'])
     def param_alertes():

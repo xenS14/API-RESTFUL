@@ -66,7 +66,8 @@ button {
 
 .graph-container {
     position: relative;
-    overflow: hidden;
+    /* overflow: hidden; */
+    overflow-y: auto;
     padding-bottom: 28%; /* Ratio d'aspect pour une carte Google Maps (hauteur / largeur) */
     height: 0;
     margin: 20px 100px;
@@ -116,12 +117,16 @@ footer {
     color: #fff;
 }
 
-.tabdatas {
-    background-color: rgb(255, 255, 255);
+.cell {
+    background-color: white;
 }
 
-.divtab {
-    width: 27em;
+.tabdatas {
+    /* background-color: rgb(255, 255, 255); */
+    background-color: rgb(0, 110, 255) ;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 tr {
@@ -151,4 +156,16 @@ td {
 
 .title-alerte {
     text-decoration: underline;
+}
+
+#id {
+    background-color: rgb(25, 84, 179)
+}
+
+#myChart {
+    background-color: aliceblue;
+}
+
+img {
+    max-width: 100%;
 }

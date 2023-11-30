@@ -127,13 +127,35 @@ def upd_sonde(connexion, sonde: dict):
     cursor.close()
 
 
-# def ajout_sonde(connexion, sonde: dict):
-#     """ Ajoute les sondes passées en paramètre dans la base de données """
-#     cursor = connexion.cursor()
-#     req = f"INSERT INTO `sonde`(`idSonde`, `Nom`, `Active`) VALUES ('{sonde['id']}', '', {sonde['statut']})"
-#     cursor.execute(req)
-#     connexion.commit()
-#     cursor.close()
+def rename_sonde(connexion, sonde: dict):
+    """
+    Modifie le nom de la sonde passée en paramètre
+    """
+    cursor = connexion.cursor()
+    req = f"UPDATE `sonde` SET `Nom`='{sonde['nom']}' WHERE idsonde = {sonde['id']}"
+    cursor.execute(req)
+    connexion.commit()
+    cursor.close()
+
+
+def upd_statut_sonde(connexion, sonde: dict):
+    """
+    Modifie le statut de la sonde passée en paramètre
+    """
+    cursor = connexion.cursor()
+    req = f"UPDATE `sonde` SET `Active`='{sonde['statut']}' WHERE idsonde = {sonde['id']}"
+    cursor.execute(req)
+    connexion.commit()
+    cursor.close()
+
+
+def ajout_sonde(connexion, sonde: dict):
+    """ Ajoute la sonde passée en paramètre dans la base de données """
+    cursor = connexion.cursor()
+    req = f"INSERT INTO `sonde`(`idSonde`, `Nom`, `Active`) VALUES ('{sonde['id']}', '{sonde['nom']}', {sonde['statut']})"
+    cursor.execute(req)
+    connexion.commit()
+    cursor.close()
 
 
 def del_sonde(connexion, sonde: str):
@@ -186,6 +208,18 @@ def get_cinq_dernier_releve(connexion, sonde: str, type: str):
     cursorRel.close()
     cursorRelS.close()
     return tabReleves
+
+
+def get_capteurs(connexion) -> list:
+    """Récupère la liste des sondes enregistrées dans la base de données"""
+    cursor = connexion.cursor()
+    cursor.execute("SELECT Nom, idSonde FROM sonde WHERE Active = 1")
+    records = cursor.fetchall()
+    lesSondes = []
+    for record in records:
+        lesSondes.append({"nom": record[0], "idsonde": record[1]})
+    cursor.close()
+    return lesSondes
 
 
 def recup_liste_capteurs(connexion) -> list:

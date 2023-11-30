@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <link rel="stylesheet" href="static/css/homepage.css">
     <title>{{title}}</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <header>
     <div class="header">
@@ -13,12 +14,8 @@
     </div>
 </header>
 
-<head>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-</head>
-
 <body>
-    <h1 class="map-title">Où se situe la sonde ?</h1>
+    <h1 class="map-title">Où se situent les sondes ?</h1>
     <div class="map-container">
         <iframe class="map"
             src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d90493.80973865828!2d-0.668412091779334!3d44.863688174378176!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xd5527e8f751ca81%3A0x796386037b397a89!2sBordeaux!5e0!3m2!1sfr!2sfr!4v1700658614047!5m2!1sfr!2sfr"
@@ -26,12 +23,12 @@
     </div>
     <div class="graph-container">
         <div class="graph-buttons">
-            <button id="temp-btn" onclick="afficherGraphique('temperature', document.querySelector('input[name=sonde]:checked').value, '12')">Température</button>
-            <button id="hum-btn" onclick="afficherGraphique('humidite', document.querySelector('input[name=sonde]:checked').value, '12')">Humidité</button>
-            <button id="histo-btn" onclick="afficherHistorique(document.querySelector('input[name=sonde]:checked').value)">Historique</button>
+            <button id="temp-btn" onclick="afficherGraphique('temperature', document.querySelector('input[name=sonde]:checked').value, document.querySelector('input[name=qte]:checked').value)">Température</button>
+            <button id="hum-btn" onclick="afficherGraphique('humidite', document.querySelector('input[name=sonde]:checked').value, document.querySelector('input[name=qte]:checked').value)">Humidité</button>
+            <button id="histo-btn" onclick="afficherHistorique(document.querySelector('input[name=sonde]:checked').value, document.querySelector('input[name=qte]:checked').value)">Historique</button>
             <fieldset>
                 <legend>Sélectionnez la sonde souhaitée :</legend>
-                <div>
+                <div id="select-sensor">
                 {% for i in range(data|length) %}
                 {% if i == 0 %}
                 <input type="radio" id={{ data[i].nom }} name="sonde" value={{ data[i].idsonde }} checked>
@@ -42,11 +39,24 @@
                 {% endfor %}
                 </div>
               </fieldset>
+              <fieldset>
+                <legend>Nombre de valeurs souhaitées :</legend>
+                <div id="select-valeur">
+                <input type="radio" id="5" name="qte" value="5" checked>
+                <label for="5">5</label>
+                <input type="radio" id="15" name="qte" value="15">
+                <label for="15">15</label>
+                <input type="radio" id="30" name="qte" value="30">
+                <label for="30">30</label>
+                <input type="radio" id="50" name="qte" value="50">
+                <label for="50">50</label>
+                </div>
+              </fieldset>
         </div>
         <div id="monChart">
             {% if data|length > 0 %}
             <div class="divtab">
-                <p id="presenttab">Les derniers relevés</p>
+                <p id="presenttab">Le dernier relevé de chaque sonde</p>
                 <table class="tabdatas">
                     <tr>
                         <td class="coltitre">Sonde</td>
@@ -55,9 +65,15 @@
                         <td class="coltitre">Date du relevé</td>
                     </tr>
                     {% for elt in data %}
-                    <tr>
+                    <tr class="cell">
                         <td>{{ elt.nom }}</td>
-                        <td>{{ elt.temp }}°C</td>
+                        {% if elt.temp > 25 %}
+                        <td><img src="static/img/soleil.png">{{ elt.temp }}°C </td>
+                        {% elif elt.temp >= 0 %}
+                        <td><img src="static/img/couvert.png">{{ elt.temp }}°C </td>
+                        {% else %}
+                        <td><img src="static/img/neige.png">{{ elt.temp }}°C </td>
+                        {% endif %}
                         {% if elt.humid != '' %}
                         <td>{{ elt.humid }}%</td>
                         {% else %}
@@ -71,21 +87,17 @@
                 <p>Il n'y a pas de données à afficher.</p>
                 {% endif %}
             </div>
-            <div>
-                <canvas id="myChart" width="400" height="200"></canvas>
-            </div>
         </div>
     </div>
         
-        <h1 class="map-title">Mes alertes :</h1>
+    <h1 class="map-title">Mes alertes :</h1>
     <div class="alerte-container">
         <p class="title-alerte">Vous avez {{ lesalertes|length }} alertes :</p>
         {% for i in range(lesalertes|length) %}
             <p>Alerte n°{{ i+1 }} : {{ lesalertes[i].type }}  {{ lesalertes[i].operateur }} {{ lesalertes[i].seuil }} || Envoi toutes les {{ lesalertes[i].freq }} heures<br></p>
         {% endfor %}
         <div class="alert-buttons">
-            <button id="voir-plus-btn" onclick="">Voir plus</button>
-            <button id="cree-alerte-btn" onclick="window.location='http://127.0.0.1:5000/param_alertes'">Créer une alerte</button>
+            <button id="cree-alerte-btn" onclick="window.location=`http://127.0.0.1:5000/param_alertes`">Créer une alerte</button>
         </div>
     </div>
 

@@ -1,7 +1,18 @@
-document.addEventListener('DOMContentLoaded', function () {});
+document.addEventListener('DOMContentLoaded', {});
+
+
+function reinitialiserGraph() {
+  let champ = document.getElementById('monChart')
+  champ.innerHTML = `<canvas id="myChart" width="400" height="200"></canvas>`
+}
 
 
 function afficherGraphique(type, sonde, nbreleve) {
+
+  // Réinitialise la zone contenant le graphe (efface le graphe précédent)
+  reinitialiserGraph()
+
+  let ctx = document.getElementById('myChart').getContext('2d');
   
   // Effectuer une requête GET avec la Fetch API
   fetch(`http://127.0.0.1:5000/${sonde}/${nbreleve}`)
@@ -9,7 +20,7 @@ function afficherGraphique(type, sonde, nbreleve) {
       if (!response.ok) {
         throw new Error('La requête a échoué avec le statut:' + response.status);
       }
-      return response.json(); // ou response.text() si la réponse n'est pas JSON
+      return response.json();
     })
     .then(data => {
       let donnees = []
@@ -30,9 +41,10 @@ function afficherGraphique(type, sonde, nbreleve) {
           datasets: [{
             label: type.charAt(0).toUpperCase() + type.slice(1), // Première lettre en majuscule
             data: donnees.reverse(),
-            borderColor: type === 'temperature' ? 'rgba(75, 192, 192, 1)' : 'rgba(255, 99, 132, 1)',
+            borderColor: type === 'temperature' ? 'rgba(28, 102, 24, 1)' : 'rgba(0, 0, 255, 1)',
+            backgroundColor: type === 'temperature' ? 'rgba(26, 205, 0, 1)' : 'rgba(25, 84, 179, 1)',
             borderWidth: 2,
-            fill: false,
+            fill: true,
           }]
         },
         options: {
@@ -40,56 +52,65 @@ function afficherGraphique(type, sonde, nbreleve) {
           maintainAspectRatio: false,
         }
       };
-      let ctx = document.getElementById('myChart').getContext('2d');
-      window.myChart = new Chart(ctx, config);
+      myChart = new Chart(ctx, config);
     })
     .catch(error => {
       console.error('Erreur de la requête:', error);
-    });
-
-  // if (window.myChart) {
-  //   window.myChart.destroy();
-  // }
-
+    }
+  );
 }
 
 
-function afficherHistorique(sonde) {
+function afficherHistorique(sonde, nbreleve) {
 
   // Effectuer une requête GET avec la Fetch API
-  fetch(`http://127.0.0.1:5000/${sonde}`)
+  fetch(`http://127.0.0.1:5000/${sonde}/${nbreleve}`)
     .then(response => {
       if (!response.ok) {
         throw new Error('La requête a échoué avec le statut:' + response.status);
       }
-      return response.json(); // ou response.text() si la réponse n'est pas JSON
+      return response.json();
     })
     .then(data => {
       // Traiter les données ici
       let elt = document.getElementById('monChart')
-      elt.innerHTML = `
-      <div class="divtab">
-        <p id="presenttab">Les derniers relevés de la sonde ${data[0].nom}</p>
-        <table class="tabdatas">
-          <tr>
-            <td class="coltitre">Température</td>
-            <td class="coltitre">Humidité</td>
-            <td class="coltitre">Date du relevé</td>
-          </tr>
-          ${Object.keys(data).map(sonde => `
-            <tr>
-              <td>${data[sonde].temp}°C</td>
-              <td>${data[sonde].humid !== '' ? data[sonde].humid + '%' : '-</td>'}
-              <td>${data[sonde].date}</td>
-            </tr>
-          `).join('')}
-        </table>
-      </div>
-    `;
-      console.log(data);
+      let contenuHistorique = `<div class="divtab">
+      <p id="presenttab">Les derniers relevés de la sonde ${data[0].nom}</p>
+      <table class="tabdatas">
+        <tr>
+          <td class="coltitre">Température</td>
+          <td class="coltitre">Humidité</td>
+          <td class="coltitre">Date du relevé</td>
+        </tr>`
+      for (let i = 0; i < data.length; i++) {
+        let laClasse = "";
+        let picto = "static/img/";
+        if (data[i].humid === '') {
+          laClasse += `class="sanshumid"`
+        }
+        if (data[i].temp > 25) {
+          picto += "soleil.png";
+        }
+        else if (data[i].temp >= 0) {
+          picto += "couvert.png";
+        }
+        else {
+          picto += "neige.png";
+        }
+        contenuHistorique += `
+        <tr class="cell">
+        <td><img src="${picto}">${data[i].temp}°C</td>
+        <td ${laClasse}>${data[i].humid !== '' ? data[i].humid + '%' : '-</td>'}
+        <td>${data[i].date}</td>
+      </tr>`
+      }
+      contenuHistorique += `</table>
+    </div>`
+      elt.innerHTML = contenuHistorique;
     })
     .catch(error => {
       // Gérer les erreurs ici
       console.error('Erreur de la requête:', error);
-    });
+    }
+  );
 }
