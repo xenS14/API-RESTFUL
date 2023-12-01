@@ -2,7 +2,6 @@ tr {
     text-align: center;
     width: 20em;
     background-color: white;
-    /* flex: auto; */
   }
 
 td {
@@ -41,4 +40,14 @@ img {
 .input-name {
     width: 80%;
     margin-bottom: 0.3em;;
+}
+
+h1 {
+    text-align: center;;
+}
+
+.btn-suppr {
+    background-color: red;
+    color:aliceblue;
+    cursor: pointer;
 }

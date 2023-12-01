@@ -38,16 +38,18 @@ def lancer_app():
             connexion_ferme(connexion)
             return render_template('templates/gestion_sondes.html', title='Gestion des sondes', sondes=sondes)
         elif request.method == "POST":
-            datas = {"id": request.form["idsonde"], "nom": request.form[f"name" + request.form["idsonde"]], "statut": request.form[request.form["idsonde"]]}
             connexion = connexion_bdd(user, host, db)
-            if datas["nom"] == "":
-                upd_statut_sonde(connexion, datas)
-            else:
-                upd_sonde(connexion, datas)
-            sondes = get_sondes(connexion)
+            donneesAction = {"action": request.form["action"][:6], "id":request.form["action"][6:]}
+            if donneesAction["action"] == "delete":
+                del_sonde(connexion, donneesAction["id"])
+            elif donneesAction["action"] == "update":
+                datas = {"id": donneesAction["id"], "nom": request.form[f"name" + donneesAction["id"]], "statut": request.form[donneesAction["id"]]}
+                if datas["nom"] == "":
+                    upd_statut_sonde(connexion, datas)
+                else:
+                    upd_sonde(connexion, datas)
             connexion_ferme(connexion)
             return redirect(url_for("accueil"))
-            # return render_template('templates/gestion_sondes.html', title='Gestion des sondes', sondes=sondes)
     
     @app.route('/param_alertes', methods = ['GET', 'POST'])
     def param_alertes():

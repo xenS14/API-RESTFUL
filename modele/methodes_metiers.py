@@ -242,7 +242,8 @@ def dernier_releve_par_sonde(connexion):
         cursor = connexion.cursor()
         cursor.execute(req)
         record = cursor.fetchone()
-        lesReleves.append({"idsonde": record[0], "nom":record[1], "temp":record[2], "humid":record[3], "date": record[4].strftime("%d-%m-%Y %H:%M:%S")})
+        if record != None:
+            lesReleves.append({"idsonde": record[0], "nom":record[1], "temp":record[2], "humid":record[3], "date": record[4].strftime("%d-%m-%Y %H:%M:%S")})
         cursor.close()
     return lesReleves
 
