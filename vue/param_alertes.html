@@ -3,12 +3,24 @@
     <head>
       <title>{{ title }}</title>
       <meta charset="utf-8">
-      <link rel="stylesheet" href="static/css/styles.css">
-      <script src="static/js/param_alertes.js"></script>
+      <link rel="stylesheet" href="static/css/homepage.css">
     </head>
     <body>
         <div class="cadrehist">
             <form method="POST" action="">
+                <fieldset>
+                    <legend>Sonde concernée par l'alerte :</legend>
+                    <div id="select-sensor">
+                    {% for i in range(sondes|length) %}
+                    {% if i == 0 %}
+                    <input type="radio" id={{ sondes[i].nom }} name="sonde" value={{ sondes[i].id }} checked>
+                    {% else %}
+                    <input type="radio" id={{ sondes[i].nom }} name="sonde" value={{ sondes[i].id }}>
+                    {% endif %}
+                    <label for={{ sondes[i].nom }}>{{ sondes[i].nom }}</label>
+                    {% endfor %}
+                    </div>
+                  </fieldset>
                 <fieldset>
                     <div id="select-type">
                         <legend>Type d'alerte :</legend>

@@ -49,9 +49,12 @@ def lancer_app():
     @app.route('/param_alertes', methods = ['GET', 'POST'])
     def param_alertes():
         if request.method == "GET":
-            return render_template('param_alertes.html', title='Définition d\'une alerte')
+            connexion = connexion_bdd(user, host, db)
+            sondes = get_sondes(connexion)
+            connexion_ferme(connexion)
+            return render_template('param_alertes.html', title='Définition d\'une alerte', sondes=sondes)
         elif request.method == "POST":
-            tabDonnees = [request.form["seuil"], request.form["freq"], request.form["type"], request.form["sens"]]
+            tabDonnees = [request.form["seuil"], request.form["freq"], request.form["type"], request.form["sens"], request.form["sonde"]]
             print(tabDonnees)
             connexion = connexion_bdd(user, host, db)
             cree_alerte(connexion, tabDonnees)

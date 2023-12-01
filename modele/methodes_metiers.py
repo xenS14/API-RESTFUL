@@ -323,7 +323,7 @@ def cree_alerte(conn, dicoDonnees):
     Enregistre l'alerte dans la base de données
     """
     cursor = conn.cursor()
-    req = f"INSERT INTO alerte (Niv, Operateur, Type, Actif, Utilisateur_idUtilisateur, frequence_envoi_mail, Sonde_idSonde) VALUES({dicoDonnees[0]}, \"{dicoDonnees[3]}\", \"{dicoDonnees[2]}\", 1, 1, {dicoDonnees[1]}, 62182233)"
+    req = f"INSERT INTO alerte (Niv, Operateur, Type, Active, Utilisateur_idUtilisateur, frequence_envoi_mail, Sonde_idSonde) VALUES({dicoDonnees[0]}, \"{dicoDonnees[3]}\", \"{dicoDonnees[2]}\", 1, 1, {dicoDonnees[1]}, \"{dicoDonnees[4]}\")"
     cursor.execute(req)
     conn.commit()
     cursor.close()
@@ -392,7 +392,7 @@ def recup_alertes(conn) -> list[dict]:
     """Récupère la liste des alertes actives"""
     cursor = conn.cursor()
     cursor.execute(
-        "SELECT Niv, Operateur, Type, frequence_envoi_mail, dernier_envoi, Utilisateur_idUtilisateur FROM alerte WHERE Actif = 1"
+        "SELECT Niv, Operateur, Type, frequence_envoi_mail, dernier_envoi, Utilisateur_idUtilisateur FROM alerte WHERE Active = 1"
     )
     records = cursor.fetchall()
     lesAlertes = []
