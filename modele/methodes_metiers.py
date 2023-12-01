@@ -66,7 +66,7 @@ def recup_cinq_releves_sondev2(connexion, sonde):
     cursor.execute("SELECT sonde.Nom, sr.Temperature, sr.Humidite, releve.Date_releve FROM sonde_has_releve AS sr "
                    "INNER JOIN sonde ON sonde.idSonde = sr.Sonde_idSonde "
                    "INNER JOIN releve ON releve.idReleve = sr.Releve_idReleve "
-                   f"WHERE Sonde_idSonde = {sonde} ORDER BY Releve_idReleve DESC LIMIT 5")
+                   f"WHERE Sonde_idSonde = \"{sonde}\" ORDER BY Releve_idReleve DESC LIMIT 5")
     records = cursor.fetchall()
     lesRelSonde = []
     for record in records:
@@ -323,7 +323,7 @@ def cree_alerte(conn, dicoDonnees):
     Enregistre l'alerte dans la base de données
     """
     cursor = conn.cursor()
-    req = f"INSERT INTO alerte (Niv, Operateur, Type, Actif, Utilisateur_idUtilisateur, frequence_envoi_mail) VALUES({dicoDonnees[0]}, \">\", \"Humidité\", 1, 1, {dicoDonnees[1]})"
+    req = f"INSERT INTO alerte (Niv, Operateur, Type, Actif, Utilisateur_idUtilisateur, frequence_envoi_mail, Sonde_idSonde) VALUES({dicoDonnees[0]}, \"{dicoDonnees[3]}\", \"{dicoDonnees[2]}\", 1, 1, {dicoDonnees[1]}, 62182233)"
     cursor.execute(req)
     conn.commit()
     cursor.close()

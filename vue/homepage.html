@@ -94,7 +94,13 @@
     <div class="alerte-container">
         <p class="title-alerte">Vous avez {{ lesalertes|length }} alertes :</p>
         {% for i in range(lesalertes|length) %}
-            <p>Alerte n°{{ i+1 }} : {{ lesalertes[i].type }}  {{ lesalertes[i].operateur }} {{ lesalertes[i].seuil }} || Envoi toutes les {{ lesalertes[i].freq }} heures<br></p>
+        {% if lesalertes[i].type == "Humidité" %}
+        <p>Alerte n°{{ i+1 }} : {{ lesalertes[i].type }} {{ lesalertes[i].operateur }} {{ lesalertes[i].seuil }}% || Envoi
+            toutes les {{ lesalertes[i].freq }} heures<br></p>
+        {% else %}
+        <p>Alerte n°{{ i+1 }} : {{ lesalertes[i].type }} {{ lesalertes[i].operateur }} {{ lesalertes[i].seuil }}°C || Envoi
+            toutes les {{ lesalertes[i].freq }} heures<br></p>
+        {% endif %}
         {% endfor %}
         <div class="alert-buttons">
             <button id="cree-alerte-btn" onclick="window.location=`http://127.0.0.1:5000/param_alertes`">Créer une alerte</button>

@@ -51,7 +51,8 @@ def lancer_app():
         if request.method == "GET":
             return render_template('param_alertes.html', title='Définition d\'une alerte')
         elif request.method == "POST":
-            tabDonnees = [request.form["hum"], request.form["freq"]]
+            tabDonnees = [request.form["seuil"], request.form["freq"], request.form["type"], request.form["sens"]]
+            print(tabDonnees)
             connexion = connexion_bdd(user, host, db)
             cree_alerte(connexion, tabDonnees)
             data = recup_cinq_releves_sonde(connexion, 62190434)
