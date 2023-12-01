@@ -16,7 +16,53 @@
     </div>
 </header>
 
-<body>
+<body onload="afficherHistorique(document.querySelector('input[name=sonde]:checked').value, 5)">
+    <div class="divtab">
+        <h1 id="presenttab">Le dernier relevé de chaque sonde</h1>
+        {% if data|length > 0 %}
+        <table class="tabdatas">
+            {% for i in range(4) %}
+            <tr class="cell">
+                {% if i == 0 %}
+                <th class="coltitre2">Sonde</th>
+                {% for rel in data %}
+                <td>{{ rel.nom }}</td>
+                {% endfor %}
+                {% elif i == 1 %}
+                <th class="coltitre2">Température</th>
+                {% for rel in data %}
+                {% if rel.temp > 25 %}
+                <td class="cell-img"><img src="static/img/soleil.png"><br>{{ rel.temp }}°C </td>
+                {% elif rel.temp > 9.9 %}
+                <td class="cell-img"><img src="static/img/eclaircies.png"><br>{{ rel.temp }}°C </td>
+                {% elif rel.temp > 0 %}
+                <td class="cell-img"><img src="static/img/couvert.png"><br>{{ rel.temp }}°C </td>
+                {% else %}
+                <td class="cell-img"><img src="static/img/neige.png"><br>{{ rel.temp }}°C </td>
+                {% endif %}
+                {% endfor %}
+                {% elif i == 2 %}
+                <th class="coltitre2">Humidité</th>
+                {% for rel in data %}
+                {% if rel.humid == '' %}
+                <td class="sanshumid">-</td>
+                {% else %}
+                <td>{{ rel.humid }}%</td>
+                {% endif %}
+                {% endfor %}
+                {% else %}
+                <th class="coltitre2">Date du relevé</th>
+                {% for rel in data %}
+                <td>{{ rel.date }}</td>
+                {% endfor %}
+                {% endif %}
+            </tr>
+            {% endfor %}
+        </table>
+        {% else %}
+        <p>Il n'y a pas de données à afficher.</p>
+        {% endif %}
+    </div>
     <h1 class="map-title">Où se situent les sondes ?</h1>
     <div class="map-container">
         <iframe class="map"
@@ -55,41 +101,7 @@
                 </div>
               </fieldset>
         </div>
-        <div id="monChart">
-            {% if data|length > 0 %}
-            <div class="divtab">
-                <p id="presenttab">Le dernier relevé de chaque sonde</p>
-                <table class="tabdatas">
-                    <tr>
-                        <td class="coltitre">Sonde</td>
-                        <td class="coltitre">Température</td>
-                        <td class="coltitre">Humidité</td>
-                        <td class="coltitre">Date du relevé</td>
-                    </tr>
-                    {% for elt in data %}
-                    <tr class="cell">
-                        <td>{{ elt.nom }}</td>
-                        {% if elt.temp > 25 %}
-                        <td><img src="static/img/soleil.png">{{ elt.temp }}°C </td>
-                        {% elif elt.temp >= 0 %}
-                        <td><img src="static/img/couvert.png">{{ elt.temp }}°C </td>
-                        {% else %}
-                        <td><img src="static/img/neige.png">{{ elt.temp }}°C </td>
-                        {% endif %}
-                        {% if elt.humid != '' %}
-                        <td>{{ elt.humid }}%</td>
-                        {% else %}
-                        <td class="sanshumid">-</td>
-                        {% endif %}
-                        <td>{{ elt.date }}</td>
-                    </tr>
-                    {% endfor %}
-                </table>
-                {% else %}
-                <p>Il n'y a pas de données à afficher.</p>
-                {% endif %}
-            </div>
-        </div>
+        <div id="monChart"></div>
     </div>
         
     <h1 class="map-title">Mes alertes :</h1>

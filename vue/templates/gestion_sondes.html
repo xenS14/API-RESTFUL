@@ -9,7 +9,7 @@
 </head>
 <header>
     <div class="header">
-
+        <button class="btn-accueil" onclick="window.location=`http://127.0.0.1:5000`">Retour accueil</button>
     </div>
 </header>
 
@@ -22,7 +22,7 @@
                     <td class="coltitre">Etat</td>
                     <td class="coltitre">Identifiant</td>
                     <td class="coltitre">Nom</td>
-                    <td class="coltitre">Modifier nom et état</td>
+                    <td class="coltitre">Changer de nom</td>
                     <td class="coltitre">Supprimer</td>
                 </tr>
                 {% for sonde in sondes %}
@@ -36,6 +36,7 @@
                         <label>
                             <input type="radio" name="{{sonde.id}}" value="0"> Désactiver
                         </label>
+                        <button class="btn-enr" type="submit" name="action" value="update{{ sonde.id }}">Enregistrer</button>
                         {% else %}
                         <img src="static/img/inactive.png"><br>
                         <label>
@@ -44,6 +45,7 @@
                         <label>
                             <input type="radio" name="{{sonde.id}}" value="0" checked> Désactiver
                         </label>
+                        <button class="btn-enr" type="submit" name="action" value="update{{ sonde.id }}">Enregistrer</button>
                         {% endif %}
                     </td>
                     <td>
@@ -52,9 +54,9 @@
                     <td>
                         {{ sonde.nom }}
                     </td>
-                    <td>
+                    <td>Nouveau nom<br>
                         <input class="input-name" type="text" name="name{{sonde.id}}">
-                        <button type="submit" name="action" value="update{{ sonde.id }}">Valider</button>
+                        <button class="btn-enr" type="submit" name="action" value="update{{ sonde.id }}">Enregistrer</button>
                     </td>
                     <td>
                         <button class="btn-suppr" type="submit" name="action" value="delete{{ sonde.id }}">Supprimer</button>
@@ -62,8 +64,19 @@
                 </tr>
                 {% endfor %}
             </table>
-        </form>
-    </div>
+        </div>
+        <div class="cree-sonde">
+            <p>
+                <label>
+                    <input class="nom-cree" type="text" name="cree-id-sonde" minlength="8" maxlength="8" placeholder="ID de la sonde">
+                </label>
+                <label>
+                    <input class="nom-cree" type="text" name="cree-nom-sonde" minlength="1" placeholder="Nom de la sonde">
+                </label>
+                <button class="btn-cree" type="submit" name="action" value="ajoute">Ajouter la sonde</button>
+            </p>
+        </div>
+    </form>
 </body>
 <!-- <footer>
     <h2 class="ip-adress">Adresse IP : 10.133.130.88</h2>

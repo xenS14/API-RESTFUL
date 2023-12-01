@@ -42,6 +42,9 @@ def lancer_app():
             donneesAction = {"action": request.form["action"][:6], "id":request.form["action"][6:]}
             if donneesAction["action"] == "delete":
                 del_sonde(connexion, donneesAction["id"])
+            elif donneesAction["action"] == "ajoute":
+                datas = {"id": request.form["cree-id-sonde"], "nom": request.form["cree-nom-sonde"]}
+                ajout_sonde(connexion, datas)
             elif donneesAction["action"] == "update":
                 datas = {"id": donneesAction["id"], "nom": request.form[f"name" + donneesAction["id"]], "statut": request.form[donneesAction["id"]]}
                 if datas["nom"] == "":

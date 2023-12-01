@@ -141,7 +141,7 @@ def upd_statut_sonde(connexion, sonde: dict):
 def ajout_sonde(connexion, sonde: dict):
     """ Ajoute la sonde passée en paramètre dans la base de données """
     cursor = connexion.cursor()
-    req = f"INSERT INTO `sonde`(`idSonde`, `Nom`, `Active`) VALUES ('{sonde['id']}', '{sonde['nom']}', {sonde['statut']})"
+    req = f"INSERT INTO `sonde`(`idSonde`, `Nom`, `Active`) VALUES ('{sonde["id"]}', '{sonde["nom"]}', 1)"
     cursor.execute(req)
     connexion.commit()
     cursor.close()

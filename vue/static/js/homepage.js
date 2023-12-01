@@ -78,7 +78,7 @@ function afficherHistorique(sonde, nbreleve) {
       // Traiter les données ici
       let elt = document.getElementById('monChart')
       let contenuHistorique = `<div class="divtab">
-      <p id="presenttab">Les derniers relevés de la sonde ${data[0].nom}</p>
+      <p id="presenttab">Les ${nbreleve} derniers relevés de la sonde ${data[0].nom}</p>
       <table class="tabdatas">
         <tr>
           <td class="coltitre">Température</td>
@@ -94,7 +94,10 @@ function afficherHistorique(sonde, nbreleve) {
         if (data[i].temp > 25) {
           picto += "soleil.png";
         }
-        else if (data[i].temp >= 0) {
+        else if (data[i].temp > 9.9) {
+          picto += "eclaircies.png";
+        }
+        else if (data[i].temp > 0) {
           picto += "couvert.png";
         }
         else {
@@ -102,7 +105,7 @@ function afficherHistorique(sonde, nbreleve) {
         }
         contenuHistorique += `
         <tr class="cell">
-        <td><img src="${picto}">${data[i].temp}°C</td>
+        <td><img src="${picto}"><br>${data[i].temp}°C</td>
         <td ${laClasse}>${data[i].humid !== '' ? data[i].humid + '%' : '-</td>'}
         <td>${data[i].date}</td>
       </tr>`

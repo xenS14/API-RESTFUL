@@ -125,7 +125,7 @@ footer {
 }
 
 .tabdatas {
-    background-color: rgb(0, 110, 255) ;
+    /* background-color: rgb(0, 110, 255) ; */
     display: flex;
     justify-content: center;
     align-items: center;
@@ -136,10 +136,11 @@ tr {
     /* flex: auto; */
   }
 
-td {
+td, td, th {
     height: 2em;
     border: 0.15em solid rgb(26, 25, 25);
     border-collapse: collapse;
+    text-align: center;
 }
 
 .coltitre {
@@ -148,6 +149,13 @@ td {
     flex:1;
     background-color: rgb(0, 153, 255);
     color: #fff;
+}
+
+.coltitre2 {
+    font-weight: bold;
+    width: 9em;
+    flex:1;
+    background-color: rgb(255, 255, 255);
 }
 
 #presenttab {
