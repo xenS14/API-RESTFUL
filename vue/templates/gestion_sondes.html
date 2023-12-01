@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/gestion_sondes.css') }}">
+    <script src="{{ url_for('static', filename='js/gestion_sondes.js') }}"></script>
+    <title>{{title}}</title>
+</head>
+<header>
+    <div class="header">
+
+    </div>
+</header>
+
+<body>
+    <div class="tab-sonde">
+        <p id="present-tab-sonde">Liste des sondes</p>
+        <form method="POST" action="">
+            <table class="tabdatas">
+                <tr>
+                    <td class="coltitre">Etat</td>
+                    <td class="coltitre">Identifiant</td>
+                    <td class="coltitre">Nom</td>
+                    <td class="coltitre">Action</td>
+                </tr>
+                {% for sonde in sondes %}
+                <tr class="cell">
+                    <td>
+                        {% if sonde.etat == 1 %}
+                        <img src="static/img/active.png">
+                        <label>
+                            <input type="radio" name="{{sonde.id}}" value="1" checked> Activer<br>
+                        </label>
+                        <label>
+                            <input type="radio" name="{{sonde.id}}" value="0"> Désactiver
+                        </label>
+                        {% else %}
+                        <img src="static/img/inactive.png">
+                        <label>
+                            <input type="radio" name="{{sonde.id}}" value="1"> Activer<br>
+                        </label>
+                        <label>
+                            <input type="radio" name="{{sonde.id}}" value="0" checked> Désactiver
+                        </label>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {{ sonde.id }}
+                    </td>
+                    <td>
+                        {{ sonde.nom }}
+                    </td>
+                    <td>
+                        <input class="input-name" type="text" name="name{{sonde.id}}">
+                        <button type="submit" name="idsonde" value="{{ sonde.id }}">Modifier</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </table>
+        </form>
+    </div>
+</body>
+<!-- <footer>
+    <h2 class="ip-adress">Adresse IP : 10.133.130.88</h2>
+</footer> -->

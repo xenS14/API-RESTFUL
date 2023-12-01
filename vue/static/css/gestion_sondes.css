@@ -1,0 +1,44 @@
+tr {
+    text-align: center;
+    width: 20em;
+    background-color: white;
+    /* flex: auto; */
+  }
+
+td {
+    height: 2em;
+    border: 0.15em solid rgb(26, 25, 25);
+    border-collapse: collapse;
+}
+
+.tabdatas {
+    background-color: rgb(0, 110, 255) ;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.coltitre {
+    font-weight: bold;
+    width: 9em;
+    flex:1;
+    background-color: rgb(0, 153, 255);
+    color: #fff;
+}
+
+.active {
+    color: darkgreen;
+}
+
+.inactive {
+    color:brown;
+}
+
+img {
+    max-width: 100%;
+}
+
+.input-name {
+    width: 80%;
+    margin-bottom: 0.3em;;
+}

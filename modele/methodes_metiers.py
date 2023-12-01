@@ -127,17 +127,6 @@ def upd_sonde(connexion, sonde: dict):
     cursor.close()
 
 
-def rename_sonde(connexion, sonde: dict):
-    """
-    Modifie le nom de la sonde passée en paramètre
-    """
-    cursor = connexion.cursor()
-    req = f"UPDATE `sonde` SET `Nom`='{sonde['nom']}' WHERE idsonde = {sonde['id']}"
-    cursor.execute(req)
-    connexion.commit()
-    cursor.close()
-
-
 def upd_statut_sonde(connexion, sonde: dict):
     """
     Modifie le statut de la sonde passée en paramètre
@@ -170,7 +159,7 @@ def del_sonde(connexion, sonde: str):
 def upd_statut_sonde(connexion, sonde: dict):
     """Modifie le statut de la sonde passée en paramètre dans la base de données"""
     cursor = connexion.cursor()
-    req = f"UPDATE `sonde` SET `Inactif` = {sonde['statut']} WHERE idSonde = {sonde['id']}"
+    req = f"UPDATE `sonde` SET `Active` = {sonde['statut']} WHERE idSonde = {sonde['id']}"
     cursor.execute(req)
     connexion.commit()
     cursor.close()
@@ -318,12 +307,12 @@ def recup_datas_ws(cle: str) -> tuple[list, list]:
     return liste_releves
 
 
-def cree_alerte(conn, dicoDonnees):
+def cree_alerte(conn, datas):
     """
     Enregistre l'alerte dans la base de données
     """
     cursor = conn.cursor()
-    req = f"INSERT INTO alerte (Niv, Operateur, Type, Active, Utilisateur_idUtilisateur, frequence_envoi_mail, Sonde_idSonde) VALUES({dicoDonnees[0]}, \"{dicoDonnees[3]}\", \"{dicoDonnees[2]}\", 1, 1, {dicoDonnees[1]}, \"{dicoDonnees[4]}\")"
+    req = f"INSERT INTO alerte (Niv, Operateur, Type, Active, Utilisateur_idUtilisateur, frequence_envoi_mail, Sonde_idSonde) VALUES({datas[0]}, \"{datas[3]}\", \"{datas[2]}\", 1, 1, {datas[1]}, \"{datas[4]}\")"
     cursor.execute(req)
     conn.commit()
     cursor.close()

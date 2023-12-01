@@ -3,13 +3,15 @@
 
 <head>
     <meta charset="UTF-8">
-    <link rel="stylesheet" href="static/css/homepage.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/homepage.css') }}">
     <title>{{title}}</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="{{ url_for('static', filename='js/homepage.js') }}"></script>
 </head>
 <header>
     <div class="header">
         <h1 class="username">Jack Thiem</h1>
+        <button id="temp-btn" onclick="window.location=`http://127.0.0.1:5000/gestion_sondes`">Gestion des sondes</button>
         <button class="disconnect-btn">Déconnexion</button>
     </div>
 </header>
@@ -27,7 +29,7 @@
             <button id="hum-btn" onclick="afficherGraphique('humidite', document.querySelector('input[name=sonde]:checked').value, document.querySelector('input[name=qte]:checked').value)">Humidité</button>
             <button id="histo-btn" onclick="afficherHistorique(document.querySelector('input[name=sonde]:checked').value, document.querySelector('input[name=qte]:checked').value)">Historique</button>
             <fieldset>
-                <legend>Sélectionnez la sonde souhaitée :</legend>
+                <legend>Sélectionnez la sonde :</legend>
                 <div id="select-sensor">
                 {% for i in range(data|length) %}
                 {% if i == 0 %}
@@ -40,7 +42,7 @@
                 </div>
               </fieldset>
               <fieldset>
-                <legend>Nombre de valeurs souhaitées :</legend>
+                <legend>Nombre de valeurs souhaité :</legend>
                 <div id="select-valeur">
                 <input type="radio" id="5" name="qte" value="5" checked>
                 <label for="5">5</label>
@@ -92,22 +94,28 @@
         
     <h1 class="map-title">Mes alertes :</h1>
     <div class="alerte-container">
+        {% if lesalertes|length == 0 %}
+        <p class="title-alerte">Vous n'avez pas d'alertes</p>
+        {% else %}
+        {% if lesalertes|length == 1 %}
+        <p class="title-alerte">Vous avez 1 alerte :</p>
+        {% else %}
         <p class="title-alerte">Vous avez {{ lesalertes|length }} alertes :</p>
+        {% endif %}
         {% for i in range(lesalertes|length) %}
         {% if lesalertes[i].type == "Humidité" %}
-        <p>Alerte n°{{ i+1 }} : {{ lesalertes[i].type }} {{ lesalertes[i].operateur }} {{ lesalertes[i].seuil }}% || Envoi
-            toutes les {{ lesalertes[i].freq }} heures<br></p>
+        <p>Alerte n°{{ i+1 }} : {{ lesalertes[i].type }} {{ lesalertes[i].operateur }} {{ lesalertes[i].seuil }}% (Envoi
+            toutes les {{ lesalertes[i].freq }} heures)<br></p>
         {% else %}
-        <p>Alerte n°{{ i+1 }} : {{ lesalertes[i].type }} {{ lesalertes[i].operateur }} {{ lesalertes[i].seuil }}°C || Envoi
-            toutes les {{ lesalertes[i].freq }} heures<br></p>
+        <p>Alerte n°{{ i+1 }} : {{ lesalertes[i].type }} {{ lesalertes[i].operateur }} {{ lesalertes[i].seuil }}°C (Envoi
+            toutes les {{ lesalertes[i].freq }} heures)<br></p>
         {% endif %}
         {% endfor %}
+        {% endif %}
         <div class="alert-buttons">
             <button id="cree-alerte-btn" onclick="window.location=`http://127.0.0.1:5000/param_alertes`">Créer une alerte</button>
         </div>
     </div>
-
-    <script src="static/js/homepage.js"></script>
 </body>
 <!-- <footer>
     <h2 class="ip-adress">Adresse IP : 10.133.130.88</h2>

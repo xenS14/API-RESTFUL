@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', {});
 
 function reinitialiserGraph() {
   let champ = document.getElementById('monChart')
-  champ.innerHTML = `<canvas id="myChart" width="400" height="200"></canvas>`
+  champ.innerHTML = `<canvas id="myChart" width="400" height="300"></canvas>`
 }
 
 
@@ -25,12 +25,15 @@ function afficherGraphique(type, sonde, nbreleve) {
     .then(data => {
       let donnees = []
       let lbl = []
+      let unite;
       Object.keys(data).map(releve => {
         if (type === "temperature") {
           donnees.push(data[releve].temp)
+          unite = " (°C)"
         }
         else {
           donnees.push(data[releve].humid)
+          unite = " (%)"
         }
         lbl.push(data[releve].date)
       }).join('')
@@ -39,7 +42,7 @@ function afficherGraphique(type, sonde, nbreleve) {
         data: {
           labels: lbl.reverse(),
           datasets: [{
-            label: type.charAt(0).toUpperCase() + type.slice(1), // Première lettre en majuscule
+            label: type.charAt(0).toUpperCase() + type.slice(1) + unite, // Première lettre en majuscule
             data: donnees.reverse(),
             borderColor: type === 'temperature' ? 'rgba(28, 102, 24, 1)' : 'rgba(0, 0, 255, 1)',
             backgroundColor: type === 'temperature' ? 'rgba(26, 205, 0, 1)' : 'rgba(25, 84, 179, 1)',
