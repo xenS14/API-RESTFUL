@@ -36,7 +36,7 @@ CREATE TABLE alerte (
   Active tinyint DEFAULT NULL,
   Utilisateur_idUtilisateur int NOT NULL,
   frequence_envoi_mail varchar(45) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  dernier_releve datetime DEFAULT NULL,
+  dernier_envoi datetime DEFAULT NULL,
   Sonde_idSonde varchar(8) COLLATE utf8mb4_unicode_ci NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 

@@ -116,11 +116,11 @@
         {% endif %}
         {% for i in range(lesalertes|length) %}
         {% if lesalertes[i].type == "Humidité" %}
-        <p>Alerte n°{{ i+1 }} : {{ lesalertes[i].type }} {{ lesalertes[i].operateur }} {{ lesalertes[i].seuil }}% (Envoi
-            toutes les {{ lesalertes[i].freq }} heures)<br></p>
+        <p>Alerte n°{{ i+1 }} : Sonde {{ lesalertes[i].sonde }} - {{ lesalertes[i].type }} {{ lesalertes[i].operateur }} {{ lesalertes[i].seuil }}% - Envoi
+            toutes les {{ lesalertes[i].freq }} heures<br></p>
         {% else %}
-        <p>Alerte n°{{ i+1 }} : {{ lesalertes[i].type }} {{ lesalertes[i].operateur }} {{ lesalertes[i].seuil }}°C (Envoi
-            toutes les {{ lesalertes[i].freq }} heures)<br></p>
+        <p>Alerte n°{{ i+1 }} : Sonde {{ lesalertes[i].sonde }} - {{ lesalertes[i].type }} {{ lesalertes[i].operateur }} {{ lesalertes[i].seuil }}°C - Envoi
+            toutes les {{ lesalertes[i].freq }} heures<br></p>
         {% endif %}
         {% endfor %}
         {% endif %}

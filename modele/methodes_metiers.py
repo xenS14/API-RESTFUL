@@ -1,6 +1,7 @@
 import requests
 import mysql.connector
 import time
+from datetime import datetime, timedelta
 from modele.var_globale import *
 
 
@@ -156,15 +157,6 @@ def del_sonde(connexion, sonde: str):
     cursor.close()
 
 
-def upd_statut_sonde(connexion, sonde: dict):
-    """Modifie le statut de la sonde passée en paramètre dans la base de données"""
-    cursor = connexion.cursor()
-    req = f"UPDATE `sonde` SET `Active` = {sonde['statut']} WHERE idSonde = {sonde['id']}"
-    cursor.execute(req)
-    connexion.commit()
-    cursor.close()
-
-
 def recup_anciens_rel(connexion) -> list:
     """Récupère la liste des relevés enregistrés dans la base de données"""
     cursor = connexion.cursor()
@@ -243,7 +235,7 @@ def dernier_releve_par_sonde(connexion):
         cursor.execute(req)
         record = cursor.fetchone()
         if record != None:
-            lesReleves.append({"idsonde": record[0], "nom":record[1], "temp":record[2], "humid":record[3], "date": record[4].strftime("%d-%m-%Y %H:%M:%S")})
+            lesReleves.append({"idsonde": record[0], "nom":record[1], "temp":record[2], "humid":record[3], "date": record[4]})
         cursor.close()
     return lesReleves
 
@@ -275,7 +267,11 @@ def get_alertes(connexion) -> list:
     records = cursor.fetchall()
     lesAlertes = []
     for record in records:
-        lesAlertes.append({"id": record[0], "seuil": record[1], "operateur": record[2], "type": record[3], "etat": record[4], "freq": record[6]})
+        cr = connexion.cursor()
+        cr.execute(f"SELECT Nom FROM sonde WHERE idSonde = {record[8]}")
+        result = cr.fetchone()[0]
+        cr.close()
+        lesAlertes.append({"id": record[0], "seuil": record[1], "operateur": record[2], "type": record[3], "etat": record[4], "freq": record[6], "sonde": result})
     cursor.close()
     return lesAlertes
 
@@ -321,69 +317,82 @@ def cree_alerte(conn, datas):
 
 def gestion_alerte(conn, lesReleves: list[dict]):
     """Gère l'envoi des alertes"""
-    """ Ne fait pas encore le lien entre Sonde et Alerte """
-    # Récupère la liste des alertes actives
-    lesAlertes = recup_alertes(conn)
-    # Parcourt la liste des releves et des alertes
+    # Parcourt la liste des relevés de sonde
     for releve in lesReleves:
+        # Récupère la liste des alertes sur la sonde en cours
+        lesAlertes = recup_alertes(conn, releve["idsonde"])
+        # Parcourt la liste des alertes
         for alerte in lesAlertes:
-            # Vérifie si le seuil est déclenché
+            # Vérifie si le seuil et le délai d'envoi sont dépassés 
             if verif_alerte(conn, alerte, releve):
-                envoiMail(conn, alerte["idUser"])
+                envoiMail(conn, alerte)
+                majAlerte(conn, alerte)        
 
 
 def verif_alerte(conn, alerte: dict, rel: dict) -> bool:
     """ Vérifie si l'alerte doit être envoyée """
     seuilDep = False
     dateOk = False
-    if alerte["ope"] == ">":
-        if alerte["type"] == "Température" and rel["Temperature"] > alerte["niv"]:
+    if rel["humid"] != "":
+        if alerte["ope"] == ">":
+            if alerte["type"] == "Température" and rel["temp"] > alerte["niv"]:
                 seuilDep = True
-        elif alerte["type"] == "Humidité" and rel["Humidite"] > alerte["niv"]:
-            seuilDep = True
-    else:
-        if alerte["type"] == "Température" and rel["Temperature"] < alerte["niv"]:
+            elif alerte["type"] == "Humidité" and float(rel["humid"]) > alerte["niv"]:
                 seuilDep = True
-        elif alerte["type"] == "Humidité" and rel["Humidite"] < alerte["niv"]:
-            seuilDep = True
-    # Si le seuil d'alerte a été dépassé
-    if seuilDep:
-        # Si la date de dernier envoi est vide
-        if alerte["d_envoi"] == "":
-            dateOk = True
-        # Sinon, calcule si l'intervalle est dépassé
         else:
-            dateOk = check_delai(conn, alerte["d_envoi"])
-        # Si le seuil est dépassé ainsi que l'intervalle
-        if dateOk == True:
-            return True
+            if alerte["type"] == "Température" and rel["temp"] < alerte["niv"]:
+                seuilDep = True
+            elif alerte["type"] == "Humidité" and float(rel["humid"]) < alerte["niv"]:
+                seuilDep = True
+        # Si le seuil d'alerte a été dépassé
+        if seuilDep:
+            # Si la date de dernier envoi est vide
+            if alerte["d_envoi"] == None:
+                dateOk = True
+            # Sinon, calcule si l'intervalle est dépassé
+            else:
+                dateOk = check_delai(conn, alerte)
+            # Si le seuil est dépassé ainsi que l'intervalle
+            if dateOk == True:
+                return True
+    # Sinon
     return False
 
 
-def check_delai(conn, dernierEnvoi) -> bool:
+def check_delai(conn, alerte: dict) -> bool:
     """
     Vérifie le délai entre le dernier envoi et la date/heure actuelle
     """
-    """
-    if alerte["freq"] + alerte["d_envoi"] > date/heure de maintenant:
+    d_envoi = alerte["d_envoi"]
+    date = d_envoi + timedelta(hours=int(alerte["freq"]))
+    maintenant = datetime.now()
+    if maintenant > date:
         return True
     else:
         return False
-    """
 
 
-def envoiMail(conn, idUser: int):
+def envoiMail(conn, alerte: dict):
     """
     Envoi le mail à l'utilisateur
     """
 
 
-def recup_alertes(conn) -> list[dict]:
+def majAlerte(conn, alerte: dict):
+    """
+    Met à jour la date de dernier envoi du mail
+    """
+    cursor = conn.cursor()
+    req = f"UPDATE alerte SET `dernier_envoi`={datetime.now().strftime("%Y%m%d%H%M%S")} WHERE `idAlerte`=\'{alerte["idAlerte"]}\'"
+    cursor.execute(req)
+    conn.commit()
+    cursor.close()
+
+
+def recup_alertes(conn, sonde: str) -> list[dict]:
     """Récupère la liste des alertes actives"""
     cursor = conn.cursor()
-    cursor.execute(
-        "SELECT Niv, Operateur, Type, frequence_envoi_mail, dernier_envoi, Utilisateur_idUtilisateur FROM alerte WHERE Active = 1"
-    )
+    cursor.execute(f"SELECT Niv, Operateur, Type, frequence_envoi_mail, dernier_envoi, Utilisateur_idUtilisateur, idAlerte FROM alerte WHERE Active = 1 AND Sonde_idSonde = {sonde}")
     records = cursor.fetchall()
     lesAlertes = []
     for record in records:
@@ -395,6 +404,7 @@ def recup_alertes(conn) -> list[dict]:
                 "freq": record[3],
                 "d_envoi": record[4],
                 "idUser": record[5],
+                "idAlerte": record[6],
             }
         )
     cursor.close()
@@ -464,11 +474,11 @@ def lance_procedure_recup(conn):
         ajout_releve(conn, rel)
         ajout_releve_sonde(conn, rel_sonde)
 
-        rel = []
-        rel_sonde = []
+        # Récupère le dernier relevé de chaque sonde
+        lesReleves = dernier_releve_par_sonde(conn)
 
         # Gère l'envoi des alertes en cas de seuil dépassé
-        # gestion_alerte(conn, rel_sonde)
+        gestion_alerte(conn, lesReleves)
 
         # Attend 5 minutes et 4 secondes
         time.sleep(61)
