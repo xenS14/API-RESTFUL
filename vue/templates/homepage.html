@@ -26,34 +26,34 @@
                 {% if i == 0 %}
                 <th class="coltitre2">Sonde</th>
                 {% for rel in data %}
-                <td>{{ rel.nom }}</td>
+                <td>{{ rel.Nom }}</td>
                 {% endfor %}
                 {% elif i == 1 %}
                 <th class="coltitre2">Température</th>
                 {% for rel in data %}
-                {% if rel.temp > 25 %}
-                <td class="cell-img"><img src="static/img/soleil.png"><br>{{ rel.temp }}°C </td>
-                {% elif rel.temp > 9.9 %}
-                <td class="cell-img"><img src="static/img/eclaircies.png"><br>{{ rel.temp }}°C </td>
-                {% elif rel.temp > 0 %}
-                <td class="cell-img"><img src="static/img/couvert.png"><br>{{ rel.temp }}°C </td>
+                {% if rel.Temp > 25 %}
+                <td class="cell-img"><img src="static/img/soleil.png"><br>{{ rel.Temp }}°C </td>
+                {% elif rel.Temp > 9.9 %}
+                <td class="cell-img"><img src="static/img/eclaircies.png"><br>{{ rel.Temp }}°C </td>
+                {% elif rel.Temp > 0 %}
+                <td class="cell-img"><img src="static/img/couvert.png"><br>{{ rel.Temp }}°C </td>
                 {% else %}
-                <td class="cell-img"><img src="static/img/neige.png"><br>{{ rel.temp }}°C </td>
+                <td class="cell-img"><img src="static/img/neige.png"><br>{{ rel.Temp }}°C </td>
                 {% endif %}
                 {% endfor %}
                 {% elif i == 2 %}
                 <th class="coltitre2">Humidité</th>
                 {% for rel in data %}
-                {% if rel.humid == '' %}
+                {% if rel.Hum == '' %}
                 <td class="sanshumid">-</td>
                 {% else %}
-                <td>{{ rel.humid }}%</td>
+                <td>{{ rel.Hum }}%</td>
                 {% endif %}
                 {% endfor %}
                 {% else %}
                 <th class="coltitre2">Date du relevé</th>
                 {% for rel in data %}
-                <td>{{ rel.date }}</td>
+                <td>{{ rel.Date }}</td>
                 {% endfor %}
                 {% endif %}
             </tr>
@@ -79,11 +79,11 @@
                 <div id="select-sensor">
                 {% for i in range(data|length) %}
                 {% if i == 0 %}
-                <input type="radio" id={{ data[i].nom }} name="sonde" value={{ data[i].idsonde }} checked>
+                <input type="radio" id={{ data[i].Nom }} name="sonde" value={{ data[i].idSonde }} checked>
                 {% else %}
-                <input type="radio" id={{ data[i].nom }} name="sonde" value={{ data[i].idsonde }}>
+                <input type="radio" id={{ data[i].Nom }} name="sonde" value={{ data[i].idSonde }}>
                 {% endif %}
-                <label for={{ data[i].nom }}>{{ data[i].nom }}</label>
+                <label for={{ data[i].Nom }}>{{ data[i].Nom }}</label>
                 {% endfor %}
                 </div>
               </fieldset>

@@ -28,7 +28,7 @@
                 {% for sonde in sondes %}
                 <tr class="cell">
                     <td>
-                        {% if sonde.etat == 1 %}
+                        {% if sonde.statut == 1 %}
                         <img src="static/img/active.png"><br>
                         <label>
                             <input type="radio" name="{{sonde.id}}" value="1" checked> Activer<br>
@@ -55,7 +55,7 @@
                         {{ sonde.nom }}
                     </td>
                     <td>Nouveau nom<br>
-                        <input class="input-name" type="text" name="name{{sonde.id}}">
+                        <input class="input-name" type="text" name="name{{ sonde.id }}">
                         <button class="btn-enr" type="submit" name="action" value="update{{ sonde.id }}">Enregistrer</button>
                     </td>
                     <td>

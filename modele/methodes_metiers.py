@@ -10,91 +10,75 @@ from email.mime.multipart import MIMEMultipart
 
 
 def connexion_bdd(user: str, host: str, db: str):
-    """Ouvre la connexion à la base de données"""
+    """
+    Ouvre la connexion à la base de données
+    
+    param user: Identifiant de l'utilisateur
+    param host: Adresse de la base de données
+    param db: Nom de la base de données
+    return: Connexion à la base de données
+    """
     conn = mysql.connector.connect(user=user, host=host, database=db)
     return conn
 
 
-def connexion_ferme(conn):
-    """Ferme la connexion à la base de données"""
-    conn.close()
-
-
-def recup_acc_api(conn) -> str:
-    """Récupère la clé pour interagir avec le Webservice"""
+def recup_acc_api(conn, idUser = 1) -> str:
+    """
+    Récupère la clé pour interagir avec le Webservice
+    
+    param conn: Connexion à la base de données
+    param idUser: Identifiant de l'utilisateur dans la base de données
+    return: Clef account du Webservice
+    """
     cursor = conn.cursor()
-    cursor.execute("SELECT account_API FROM utilisateur WHERE idUtilisateur = 1")
+    cursor.execute(f"SELECT account_API FROM utilisateur WHERE idUtilisateur = {idUser}")
     record = cursor.fetchone()[0]
     cursor.close()
     return record
 
 
 def convert_hexa(hexa: str) -> int:
-    """Convertit une chaîne hexadécimale en entier"""
+    """
+    Convertit une chaîne hexadécimale en entier
+    
+    param hexa: Chaîne hexadécimale à convertir
+    return: Valeur entière de la chaîne convertie
+    """
     return int(hexa, 16)
 
 
-def recup_cinq_releves_sonde(connexion, sonde):
-    """Récupère les 5 derniers relevés pour une sonde donnée"""
+def recup_des_releves_sonde(connexion, sonde, nbdereleves = 5) -> list[dict]:
+    """
+    Récupère les 5 derniers relevés pour une sonde donnée
+    
+    param connexion: Connexion à la base de données
+    param sonde: Identifiant de la sonde pour laquelle on veut les relevés
+    param nbdereleves: Nombre de relevés souhaités pour cette sonde
+    return: Liste des relevés de la sonde concernée
+    """
     cursor = connexion.cursor()
     cursor.execute(
-        "SELECT sonde_has_releve.*, releve.Date_releve FROM `releve` "
-        "INNER JOIN `sonde_has_releve` ON sonde_has_releve.Releve_idReleve = releve.idReleve "
-        f"WHERE Sonde_idSonde = {sonde} ORDER BY Releve_idReleve DESC LIMIT 5"
+        "SELECT sr.*, releve.Date_releve, sonde.Nom FROM sonde_has_releve AS sr "
+        "INNER JOIN sonde ON sonde.idSonde = sr.Sonde_idSonde "
+        "INNER JOIN releve ON releve.idReleve = sr.Releve_idReleve "
+        f"WHERE Sonde_idSonde = \'{sonde}\' ORDER BY Releve_idReleve DESC LIMIT {nbdereleves}"
     )
     records = cursor.fetchall()
     lesRelSonde = []
     for record in records:
-        lesRelSonde.append({"idSonde": record[0],"idReleve": record[1],"Temp": record[2],"Hum": record[3],"Batt": record[4],"RSSI": record[5],"Date": record[6].strftime("%d-%m-%Y %H:%M:%S")})
+        lesRelSonde.append({"idSonde": record[0], "idReleve": record[1], "temp": record[2], "hum": record[3], "batt": record[4],
+                            "rssi": record[5], "date": record[6].strftime("%d-%m-%Y %H:%M:%S"), "nom":record[7]})
     cursor.close()
     return lesRelSonde
-
-
-def recup_des_releves_de_sonde(connexion, sonde, nbreleve):
-    """Récupère les derniers relevés pour une sonde donnée"""
-    cursor = connexion.cursor()
-    cursor.execute("SELECT sonde.Nom, sr.Temperature, sr.Humidite, releve.Date_releve FROM sonde_has_releve AS sr "
-                   "INNER JOIN sonde ON sonde.idSonde = sr.Sonde_idSonde "
-                   "INNER JOIN releve ON releve.idReleve = sr.Releve_idReleve "
-                   f"WHERE Sonde_idSonde = {sonde} ORDER BY Releve_idReleve DESC LIMIT {nbreleve}")
-    records = cursor.fetchall()
-    lesRelSonde = []
-    for record in records:
-        lesRelSonde.append({"nom": record[0],"temp": record[1],"humid": record[2], "date": record[3].strftime("%d-%m-%Y %H:%M:%S")})
-    cursor.close()
-    return lesRelSonde
-
-
-def recup_cinq_releves_sondev2(connexion, sonde):
-    """Récupère les 5 derniers relevés pour une sonde donnée"""
-    cursor = connexion.cursor()
-    cursor.execute("SELECT sonde.Nom, sr.Temperature, sr.Humidite, releve.Date_releve FROM sonde_has_releve AS sr "
-                   "INNER JOIN sonde ON sonde.idSonde = sr.Sonde_idSonde "
-                   "INNER JOIN releve ON releve.idReleve = sr.Releve_idReleve "
-                   f"WHERE Sonde_idSonde = \"{sonde}\" ORDER BY Releve_idReleve DESC LIMIT 5")
-    records = cursor.fetchall()
-    lesRelSonde = []
-    for record in records:
-        lesRelSonde.append({"nom": record[0],"temp": record[1],"humid": record[2], "date": record[3].strftime("%d-%m-%Y %H:%M:%S")})
-    cursor.close()
-    return lesRelSonde
-
-
-def recup_cinq_releves(connexion):
-    """Récupère les 5 derniers relevés"""
-    cursor = connexion.cursor()
-    cursor.execute(f"SELECT * FROM `releve` ORDER BY Date_releve DESC LIMIT 5")
-    records = cursor.fetchall()
-    lesRel = []
-    for record in records:
-        date = record[1].strftime("%Y-%m-%d %H:%M:%S")
-        lesRel.append({"id": record[0], "date": date})
-    cursor.close()
-    return lesRel
 
 
 def ajout_releve_sonde(connexion, datas: tuple[list, dict]):
-    """Ajoute les relevés de sonde passés en paramètre dans la base de données"""
+    """
+    Ajoute les relevés de sonde passés en paramètre dans la base de données
+    
+    param connexion: Connexion à la base de données
+    param datas: Liste des relevés de sonde à ajouter à la table sonde_has_releve
+    """
     cursor = connexion.cursor()
     for i in range(len(datas)):
         req = (f"INSERT INTO sonde_has_releve (`Sonde_idSonde`, `Releve_idReleve`, `Temperature`, `Humidite`, `Niveau_batterie`, `Signal_RSSI`) "
@@ -109,7 +93,12 @@ def ajout_releve_sonde(connexion, datas: tuple[list, dict]):
 
 
 def ajout_releve(connexion, datas: tuple[list, dict]):
-    """Ajoute les relevés passés en paramètre dans la base de données"""
+    """
+    Ajoute les relevés passés en paramètre dans la base de données
+    
+    param connexion: Connexion à la base de données
+    param datas: Liste des relevés à ajouter à la table releve
+    """
     cursor = connexion.cursor()
     for i in range(len(datas)):
         req = (f"INSERT INTO `releve` (`idReleve`, `Date_releve`) VALUES ({datas[i]['id']}, {datas[i]['date']})")
@@ -121,9 +110,12 @@ def ajout_releve(connexion, datas: tuple[list, dict]):
     cursor.close()
 
 
-def upd_sonde(connexion, sonde: dict):
+def maj_sonde(connexion, sonde: dict):
     """
     Modifie la sonde passée en paramètre
+
+    param connexion: Connexion à la base de données
+    param sonde: Données de sonde à modifier
     """
     cursor = connexion.cursor()
     req = f"UPDATE `sonde` SET `Nom`='{sonde['nom']}', `Active`='{sonde['statut']}' WHERE idsonde = {sonde['id']}"
@@ -132,9 +124,12 @@ def upd_sonde(connexion, sonde: dict):
     cursor.close()
 
 
-def upd_statut_sonde(connexion, sonde: dict):
+def maj_statut_sonde(connexion, sonde: dict):
     """
     Modifie le statut de la sonde passée en paramètre
+
+    param connexion: Connexion à la base de données
+    param sonde: Sonde avec son nouveau statut à mettre à jour
     """
     cursor = connexion.cursor()
     req = f"UPDATE `sonde` SET `Active`='{sonde['statut']}' WHERE idsonde = {sonde['id']}"
@@ -144,7 +139,12 @@ def upd_statut_sonde(connexion, sonde: dict):
 
 
 def ajout_sonde(connexion, sonde: dict):
-    """ Ajoute la sonde passée en paramètre dans la base de données """
+    """
+    Ajoute la sonde passée en paramètre dans la base de données
+    
+    param connexion: Connexion à la base de données
+    param sonde: Sonde à ajouter
+    """
     cursor = connexion.cursor()
     req = f"INSERT INTO `sonde`(`idSonde`, `Nom`, `Active`) VALUES ('{sonde["id"]}', '{sonde["nom"]}', 1)"
     cursor.execute(req)
@@ -152,8 +152,13 @@ def ajout_sonde(connexion, sonde: dict):
     cursor.close()
 
 
-def del_sonde(connexion, sonde: str):
-    """Supprime la sonde passée en paramètre dans la base de données"""
+def suppr_sonde(connexion, sonde: str):
+    """
+    Supprime la sonde passée en paramètre dans la base de données
+    
+    param connexion: Connexion à la base de données
+    param sonde: Sonde à supprimer
+    """
     cursor = connexion.cursor()
     req = f"DELETE FROM `sonde` WHERE idSonde = {sonde}"
     cursor.execute(req)
@@ -161,8 +166,13 @@ def del_sonde(connexion, sonde: str):
     cursor.close()
 
 
-def recup_anciens_rel(connexion) -> list:
-    """Récupère la liste des relevés enregistrés dans la base de données"""
+def recup_anciens_releves(connexion) -> list:
+    """
+    Récupère la liste des relevés enregistrés dans la base de données
+    
+    param connexion: Connexion à la base de données
+    return: Liste des id de tous les relevés enregistrés dans la base de données
+    """
     cursor = connexion.cursor()
     cursor.execute("SELECT idReleve FROM releve")
     records = cursor.fetchall()
@@ -173,57 +183,31 @@ def recup_anciens_rel(connexion) -> list:
     return lesId
 
 
-def get_cinq_dernier_releve(connexion, sonde: str, type: str):
+def recup_sondes(connexion) -> list:
     """
-    Récupère les 5 derniers relevés pour les retourner au format JSON à l'application Web
-    parm connexion: Connexion à la BDD
-    param sonde: Id de la sonde
-    param type: Type d'info ("Temperature" ou "Humidite")
-    return: 5 derniers relevés de la sonde au format JSON
+    Récupère la liste des sondes enregistrées dans la base de données
+    
+    param connexion: Connexion à la base de données
+    return: Liste des sondes
     """
-    tabReleves = []
-    cursorRel = connexion.cursor()
-    cursorRelS = connexion.cursor()
-    cursorRelS.execute(f"SELECT {type}, Releve_idReleve FROM sonde_has_releve WHERE Sonde_idSonde = {sonde} ORDER BY Releve_idReleve DESC LIMIT 5")
-    records = cursorRelS.fetchall()
-    for record in records:
-        cursorRel.execute(f"SELECT * FROM releve WHERE idReleve = {record[1]}")
-        date = cursorRel.fetchone()[1]
-        tabReleves.append({"id": record[1], "date": date.strftime("%Y-%m-%d %H:%M:%S"), "valeur": record[0]})
-    cursorRel.close()
-    cursorRelS.close()
-    return tabReleves
-
-
-def get_capteurs(connexion) -> list:
-    """Récupère la liste des sondes enregistrées dans la base de données"""
     cursor = connexion.cursor()
-    cursor.execute("SELECT Nom, idSonde FROM sonde WHERE Active = 1")
+    cursor.execute("SELECT * FROM sonde")
     records = cursor.fetchall()
     lesSondes = []
     for record in records:
-        lesSondes.append({"nom": record[0], "idsonde": record[1]})
+        lesSondes.append({"id": record[0], "nom": record[1], "statut": record[2]})
     cursor.close()
     return lesSondes
 
 
-def recup_liste_capteurs(connexion) -> list:
-    """Récupère la liste des sondes enregistrées dans la base de données"""
-    cursor = connexion.cursor()
-    cursor.execute("SELECT idSonde FROM sonde WHERE Active = 1")
-    records = cursor.fetchall()
-    lesSondes = []
-    for record in records:
-        lesSondes.append(record[0])
-    cursor.close()
-    return lesSondes
-
-
-def dernier_releve_par_sonde(connexion):
+def dernier_releve_par_sonde(connexion) -> list[dict]:
     """
     Récupère le dernier relevé pour chaque sonde
+
+    param connexion: Connexion à la base de données
+    return: Liste du dernier relevé de chaque sonde
     """
-    lesSondes = recup_liste_capteurs(connexion)
+    lesSondes = recup_sondes(connexion)
     lesReleves = []
     for sonde in lesSondes:
         req = (
@@ -231,7 +215,7 @@ def dernier_releve_par_sonde(connexion):
             "FROM sonde_has_releve AS sr "
             "INNER JOIN sonde ON sonde.idSonde = sr.Sonde_idSonde "
             "INNER JOIN releve ON releve.idReleve = sr.Releve_idReleve "
-            f"WHERE sonde.idSonde = {sonde} "
+            f"WHERE sonde.idSonde = {sonde["id"]} "
             "ORDER BY sr.Releve_idReleve DESC "
             "LIMIT 1"
         )
@@ -239,50 +223,16 @@ def dernier_releve_par_sonde(connexion):
         cursor.execute(req)
         record = cursor.fetchone()
         if record != None:
-            lesReleves.append({"idsonde": record[0], "nom":record[1], "temp":record[2], "humid":record[3], "date": record[4].strftime("%d-%m-%Y %H:%M:%S")})
+            lesReleves.append({"idSonde": record[0], "Nom":record[1], "Temp":record[2], "Hum":record[3], "Date": record[4].strftime("%d-%m-%Y %H:%M:%S")})
         cursor.close()
     return lesReleves
-
-
-def get_sondes(connexion) -> list:
-    """
-    Récupère la liste des sondes et la retourne au format JSON
-    param connexion: Connexion à la BDD
-    return: Liste des sondes au format JSON
-    """
-    cursor = connexion.cursor()
-    cursor.execute("SELECT * FROM sonde")
-    records = cursor.fetchall()
-    lesSondes = []
-    for record in records:
-        lesSondes.append({"id": record[0], "nom": record[1], "etat": record[2]})
-    cursor.close()
-    return lesSondes
-
-
-def get_alertes(connexion) -> list:
-    """
-    Récupère la liste des alertes et la retourne
-    param connexion: Connexion à la BDD
-    return: Liste des alertes
-    """
-    cursor = connexion.cursor()
-    cursor.execute("SELECT * FROM alerte WHERE Utilisateur_idUtilisateur = 1")
-    records = cursor.fetchall()
-    lesAlertes = []
-    for record in records:
-        cr = connexion.cursor()
-        cr.execute(f"SELECT Nom FROM sonde WHERE idSonde = {record[8]}")
-        result = cr.fetchone()[0]
-        cr.close()
-        lesAlertes.append({"id": record[0], "seuil": record[1], "operateur": record[2], "type": record[3], "etat": record[4], "freq": record[6], "sonde": result})
-    cursor.close()
-    return lesAlertes
 
 
 def convertit_date(chaine: str) -> str:
     """
     Convertit une date du format Ddd, DD MM YYYY HH:MM:SS au format YYYYMMDDHHMMSS
+
+    param chaine: Chaîne à convertir
     return: Date convertie
     """
     tabDate = chaine.split(' ')
@@ -294,8 +244,9 @@ def convertit_date(chaine: str) -> str:
 def recup_datas_ws(cle: str) -> tuple[list, list]:
     """
     Récupère les relevés auprès du WebService et les stocke dans un tableau de tableaux
+
     param cle: Clé de l'account pour se connecter au Webservice
-    return: Liste des relevés
+    return: Liste des relevés provenant du Webservice
     """
     response = requests.get(f"http://app.objco.com:8099/?account={cle}&limit=3")
     if response.status_code != 200:
@@ -308,9 +259,12 @@ def recup_datas_ws(cle: str) -> tuple[list, list]:
     return liste_releves
 
 
-def cree_alerte(conn, datas):
+def cree_alerte(conn, datas: list):
     """
     Enregistre l'alerte dans la base de données
+
+    param conn: Connexion à la base de données
+    param datas: Données de l'alerte devant être créée
     """
     cursor = conn.cursor()
     req = f"INSERT INTO alerte (Niv, Operateur, Type, Active, Utilisateur_idUtilisateur, frequence_envoi_mail, Sonde_idSonde) VALUES({datas[0]}, \"{datas[3]}\", \"{datas[2]}\", 1, 1, {datas[1]}, \"{datas[4]}\")"
@@ -320,21 +274,33 @@ def cree_alerte(conn, datas):
 
 
 def gestion_alerte(conn, lesReleves: list[dict]):
-    """Gère l'envoi des alertes"""
+    """
+    Gère l'envoi des alertes
+    
+    param conn: Connexion à la base de données
+    param lesReleves: Liste des relevés à vérifier
+    """
     # Parcourt la liste des relevés de sonde
     for releve in lesReleves:
         # Récupère la liste des alertes sur la sonde en cours
-        lesAlertes = recup_alertes(conn, releve["idsonde"])
+        lesAlertes = recup_alertes_sonde(conn, releve["idsonde"])
         # Parcourt la liste des alertes
         for alerte in lesAlertes:
             # Vérifie si le seuil et le délai d'envoi sont dépassés 
             if verif_alerte(conn, alerte, releve):
                 if envoiMail(conn, alerte, releve):
-                    majAlerte(conn, alerte)        
+                    maj_Alerte(conn, alerte)        
 
 
 def verif_alerte(conn, alerte: dict, rel: dict) -> bool:
-    """ Vérifie si l'alerte doit être envoyée """
+    """
+    Vérifie si l'alerte doit être envoyée
+
+    param conn: Connexion à la base de données
+    param alerte: Alerte qui doit être vérifiée
+    param rel: Relevé avec lequel l'alerte est vérifiée
+    return: True si l'alerte doit être déclenchée, False dans le cas contraire
+    """
     seuilDep = False
     dateOk = False
     if rel["humid"] != "":
@@ -355,7 +321,7 @@ def verif_alerte(conn, alerte: dict, rel: dict) -> bool:
                 dateOk = True
             # Sinon, calcule si l'intervalle est dépassé
             else:
-                dateOk = check_delai(conn, alerte)
+                dateOk = verif_delai(conn, alerte)
             # Si le seuil est dépassé ainsi que l'intervalle
             if dateOk == True:
                 return True
@@ -363,9 +329,13 @@ def verif_alerte(conn, alerte: dict, rel: dict) -> bool:
     return False
 
 
-def check_delai(conn, alerte: dict) -> bool:
+def verif_delai(conn, alerte: dict) -> bool:
     """
     Vérifie le délai entre le dernier envoi et la date/heure actuelle
+
+    param conn: Connexion à la base de données
+    param alerte: Alerte pour laquelle il faut vérifier si le délai d'attente est dépassé
+    return: True si le délai d'attente est dépassé, False dans le cas contraire
     """
     d_envoi = alerte["d_envoi"]
     date = d_envoi + timedelta(hours=int(alerte["freq"]))
@@ -376,9 +346,14 @@ def check_delai(conn, alerte: dict) -> bool:
         return False
 
 
-def envoiMail(conn, alerte: dict, releve: dict):
+def envoiMail(conn, alerte: dict, releve: dict) -> bool:
     """
     Envoi le mail à l'utilisateur
+
+    param conn: Connexion à la base de données
+    param alerte: Alerte qui a été déclenchée
+    param releve: Relevé ayant levé l'alerte
+    return: True si l'email a été envoyé, False dans le cas contraire 
     """
     # Récupère les infos de l'utilisateur
     cursor = conn.cursor()
@@ -402,9 +377,10 @@ def envoiMail(conn, alerte: dict, releve: dict):
         valeur = releve["humid"]
     date = releve["date"].split(' ')
     message = (
-        f"Bonjour {user[1]} {user[2]},\n"
+        f"Bonjour {user[1]} {user[2]},\n\n"
         f"La sonde n°{releve["idsonde"]} ({nomSonde}) a détecté une {alerte["type"].lower()} {operateur} à {alerte["niv"]}{unite} ({valeur}{unite}) "
-        f"le {date[0]} à {date[1]}."
+        f"le {date[0]} à {date[1]}.\n\n"
+        f"Votre service alerte."
                )
     # Création de la session SMTP
     # Informations du compte Gmail
@@ -446,9 +422,12 @@ def envoiMail(conn, alerte: dict, releve: dict):
         return False
 
 
-def majAlerte(conn, alerte: dict):
+def maj_Alerte(conn, alerte: dict):
     """
-    Met à jour la date de dernier envoi du mail
+    Met à jour la date de dernier envoi de mail d'une alerte dans la base de données
+
+    param conn: Connexion à la base de données
+    param alerte: Alerte qui doit être mise à jour dans la base de données
     """
     cursor = conn.cursor()
     req = f"UPDATE alerte SET `dernier_envoi`={datetime.now().strftime("%Y%m%d%H%M%S")} WHERE `idAlerte`=\'{alerte["idAlerte"]}\'"
@@ -457,9 +436,34 @@ def majAlerte(conn, alerte: dict):
     cursor.close()
 
 
-def recup_alertes(conn, sonde: str) -> list[dict]:
+def recup_liste_alertes(connexion) -> list:
+    """
+    Récupère la liste des alertes et la retourne
+    
+    param connexion: Connexion à la BDD
+    return: Liste des alertes
+    """
+    cursor = connexion.cursor()
+    cursor.execute("SELECT * FROM alerte WHERE Utilisateur_idUtilisateur = 1")
+    records = cursor.fetchall()
+    lesAlertes = []
+    for record in records:
+        cr = connexion.cursor()
+        cr.execute(f"SELECT Nom FROM sonde WHERE idSonde = {record[8]}")
+        result = cr.fetchone()[0]
+        cr.close()
+        lesAlertes.append({"id": record[0], "seuil": record[1], "operateur": record[2], "type": record[3], "etat": record[4], "freq": record[6], "sonde": result})
+    cursor.close()
+    return lesAlertes
+
+
+def recup_alertes_sonde(conn, sonde: str) -> list[dict]:
     """
     Récupère la liste des alertes actives
+
+    param conn: Connexion à la base de données
+    param sonde: id de sonde
+    return: Liste des alertes reliées à la sonde passée en paramètre
     """
     cursor = conn.cursor()
     cursor.execute(f"SELECT Niv, Operateur, Type, frequence_envoi_mail, dernier_envoi, Utilisateur_idUtilisateur, idAlerte FROM alerte WHERE Active = 1 AND Sonde_idSonde = {sonde}")
@@ -482,15 +486,25 @@ def recup_alertes(conn, sonde: str) -> list[dict]:
 
 
 def trt_chaine(conn, liste_releves: list) -> tuple[list, list]:
-    """Traite les relevés reçus du Webservice en vue de les stocker dans la base de données"""
-    # Récupère la liste des capteurs
-    liste_capteurs = recup_liste_capteurs(conn)
+    """
+    Traite les relevés reçus du Webservice en vue de les stocker dans la base de données
+    
+    param conn: Connexion à la base de données
+    param liste_releves: Liste des relevés reçus du Webservice
+    return: Liste des relevés + liste des relevés de sonde à envoyer respectivement dans les tables "releve" et "sonde_has_releve" de la base de données
+    """
+    # Récupère la liste des sondes
+    liste_sondes = recup_sondes(conn)
+    lesSondes = []
+    for sonde in liste_sondes:
+        if sonde["statut"] == 1:
+            lesSondes.append(sonde["id"])
     # Stocke les relevés à enregistrer dans la BDD
     les_releves = []
     # Stocke les releves_has_sonde à enregistrer dans la BDD
     les_rel_sonde = []
     # Récupère la liste des relevés déjà présents dans la BDD
-    anciens_releves = recup_anciens_rel(conn)
+    anciens_releves = recup_anciens_releves(conn)
     for releve in liste_releves:
         # Si le relevé n'est pas déjà présent dans la BDD, récupère ses infos
         if releve[0] not in anciens_releves:
@@ -498,11 +512,11 @@ def trt_chaine(conn, liste_releves: list) -> tuple[list, list]:
             date = convertit_date(releve[2])
             # Ajoute les données relatives au relevé dans la liste
             les_releves.append({"id": releve[0], "date": date})
-            # Récupère les données du relevé pour chaque capteur présent dans ce relevé
-            for capteur in liste_capteurs:
+            # Récupère les données du relevé pour chaque sonde présente dans ce relevé
+            for sonde in lesSondes:
                 chaine = releve[1]
-                # Cherche si le capteur est présent dans le relevé
-                pos = chaine.find(capteur)
+                # Cherche si la sonde est présent dans le relevé
+                pos = chaine.find(sonde)
                 if pos != -1:
                     volt = convert_hexa(chaine[pos + 10 : pos + 14]) / 1000  # Voltage
                     temp = convert_hexa(chaine[pos + 16 : pos + 18]) / 10  # Température
@@ -515,7 +529,7 @@ def trt_chaine(conn, liste_releves: list) -> tuple[list, list]:
                     # Ajoute les données relatives au relevé de sonde dans la liste
                     les_rel_sonde.append(
                         {
-                            "idSonde": capteur,
+                            "idSonde": sonde,
                             "idReleve": releve[0],
                             "Temperature": temp,
                             "Humidite": humid,
@@ -524,15 +538,20 @@ def trt_chaine(conn, liste_releves: list) -> tuple[list, list]:
                         }
                     )
                     # Affiche dans la console les relevés récupérés
-                    print("Capteur n° " + str(chaine[pos : pos + 8]) + " || Relevé n° : " + str(releve[0]) + " || " + str(releve[2]))
+                    print("Sonde n° " + str(chaine[pos : pos + 8]) + " || Relevé n° : " + str(releve[0]) + " || " + str(releve[2]))
                     print("Voltage : " + str(volt) + "V || Température : " + str(temp) + "°C || Humidité : " + humid + "% || RSSI : " + str(rssi) + "dBm\n")
     return les_releves, les_rel_sonde
 
 
 def lance_procedure_recup(conn):
-    """Boucle sur la récupération des données auprès du Webservice et l'envoi de ces données vers la BDD à intervalles réguliers"""
+    """
+    Boucle sur la récupération des données auprès du Webservice, l'envoi de ces données vers la BDD à intervalles réguliers et le traitement des alertes
+
+    param conn: Connexion à la base de données
+    """
     # Récupère la clé pour se connecter au Webservice
     cle = recup_acc_api(conn)
+
     while True:
         # Récupère les données auprès du WebService à intervalle régulier
         datas = recup_datas_ws(cle)
@@ -548,7 +567,7 @@ def lance_procedure_recup(conn):
         lesReleves = dernier_releve_par_sonde(conn)
 
         # Gère l'envoi des alertes en cas de seuil dépassé
-        gestion_alerte(conn, lesReleves)
+        #gestion_alerte(conn, lesReleves)
 
         # Attend 5 minutes et 4 secondes
         time.sleep(61)

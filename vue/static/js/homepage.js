@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', {});
+// document.addEventListener('DOMContentLoaded', {});
 
 
 function reinitialiserGraph() {
@@ -32,7 +32,7 @@ function afficherGraphique(type, sonde, nbreleve) {
           unite = " (°C)"
         }
         else {
-          donnees.push(data[releve].humid)
+          donnees.push(data[releve].hum)
           unite = " (%)"
         }
         lbl.push(data[releve].date)
@@ -88,7 +88,7 @@ function afficherHistorique(sonde, nbreleve) {
       for (let i = 0; i < data.length; i++) {
         let laClasse = "";
         let picto = "static/img/";
-        if (data[i].humid === '') {
+        if (data[i].hum === '') {
           laClasse += `class="sanshumid"`
         }
         if (data[i].temp > 25) {
@@ -106,7 +106,7 @@ function afficherHistorique(sonde, nbreleve) {
         contenuHistorique += `
         <tr class="cell">
         <td><img src="${picto}"><br>${data[i].temp}°C</td>
-        <td ${laClasse}>${data[i].humid !== '' ? data[i].humid + '%' : '-</td>'}
+        <td ${laClasse}>${data[i].hum !== '' ? data[i].hum + '%' : '-</td>'}
         <td>${data[i].date}</td>
       </tr>`
       }

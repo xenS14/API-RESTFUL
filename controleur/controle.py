@@ -14,4 +14,4 @@ threading.Thread(target=lance_procedure_recup, args=(conn,)).start()
 lancer_app()
 
 # Ferme la connexion à la base de données
-connexion_ferme(conn)
+conn.close()
