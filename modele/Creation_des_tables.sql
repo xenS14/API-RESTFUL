@@ -1,12 +1,3 @@
--- phpMyAdmin SQL Dump
--- version 5.2.0
--- https://www.phpmyadmin.net/
---
--- Hôte : 127.0.0.1:3306
--- Généré le : ven. 01 déc. 2023 à 09:07
--- Version du serveur : 8.0.31
--- Version de PHP : 8.0.26
-
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
 SET time_zone = "+00:00";
@@ -105,7 +96,8 @@ CREATE TABLE utilisateur (
   Email varchar(60) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   Identifiant varchar(45) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   Mot_de_passe varchar(45) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  account_API varchar(10) COLLATE utf8mb4_unicode_ci DEFAULT NULL
+  account_API varchar(10) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  mdp_appli varchar(48) COLLATE utf8mb4_unicode_ci DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
@@ -113,7 +105,7 @@ CREATE TABLE utilisateur (
 --
 
 INSERT INTO utilisateur (idUtilisateur, Prenom, Nom, Numero_telephone, Email, Identifiant, Mot_de_passe, account_API) VALUES
-(1, 'Jack', 'THIEM', NULL, NULL, NULL, NULL, '16L1SPQZS3');
+(1, 'Jack', 'THIEM', 'jackthiem311@gmail.com', NULL, NULL, NULL, '16L1SPQZS3', NULL);
 
 --
 -- Index pour les tables déchargées
