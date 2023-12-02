@@ -7,6 +7,7 @@ import json
 def lancer_app():
     app = Flask(__name__, template_folder="")
 
+    # Page d'accueil de l'interface
     @app.route("/", methods = ['GET'])
     def accueil():
         if request.method == "GET":
@@ -16,13 +17,40 @@ def lancer_app():
             connexion.close()
             return render_template("templates/homepage.html", title="Accueil", data=data, lesalertes=alertes)
     
-    @app.route("/<idsonde>/<nbreleve>")
-    def graphe(idsonde, nbreleve):
+    # Récupère un nombre déterminé de relevés pour la sonde passée en paramètre
+    @app.route("/releve/<idsonde>/<nbreleve>")
+    def recup_releve_par_sonde(idsonde, nbreleve):
         connexion = connexion_bdd(user, host, db)
         data = recup_des_releves_sonde(connexion, idsonde, nbreleve)
         connexion.close()
         return json.dumps(data)
     
+    # Récupère le nombre de relevé pour la sonde passée en paramètre
+    @app.route("/nbreleve/<idsonde>")
+    def recup_nb_de_releve(idsonde):
+        connexion = connexion_bdd(user, host, db)
+        nbreleve = recup_nb_releve_sonde(connexion, idsonde)
+        data = recup_des_releves_sonde(connexion, idsonde, nbreleve)
+        connexion.close()
+        return json.dumps(data)
+    
+    # Récupère la liste des sondes
+    @app.route("/sondes")
+    def recup_les_sondes():
+        connexion = connexion_bdd(user, host, db)
+        data = recup_sondes(connexion)
+        connexion.close()
+        return json.dumps(data)
+    
+    # Récupère la sonde passé en paramètre
+    @app.route("/sonde/<idsonde>")
+    def recup_une_sonde(idsonde):
+        connexion = connexion_bdd(user, host, db)
+        data = recup_sondes(connexion, idsonde)
+        connexion.close()
+        return json.dumps(data)
+    
+    # Affiche la page de gestion des sondes et crée les routes pour les ajouts et mise à jour des sondes
     @app.route('/gestion_sondes', methods=['GET', 'POST'])
     def gesSonde():
         if request.method == "GET":
@@ -47,6 +75,7 @@ def lancer_app():
             connexion.close()
             return redirect(url_for("accueil"))
     
+    # Affiche la page de gestion des alertes et crée la route pour la création d'alertes
     @app.route('/param_alertes', methods = ['GET', 'POST'])
     def param_alertes():
         if request.method == "GET":

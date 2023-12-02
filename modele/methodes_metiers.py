@@ -183,15 +183,18 @@ def recup_anciens_releves(connexion) -> list:
     return lesId
 
 
-def recup_sondes(connexion) -> list:
+def recup_sondes(connexion, idSonde = '') -> list:
     """
     Récupère la liste des sondes enregistrées dans la base de données
     
     param connexion: Connexion à la base de données
     return: Liste des sondes
     """
+    where = ''
+    if idSonde != '':
+        where = f' WHERE idSonde = {idSonde}'
     cursor = connexion.cursor()
-    cursor.execute("SELECT * FROM sonde")
+    cursor.execute(f"SELECT * FROM sonde{where}")
     records = cursor.fetchall()
     lesSondes = []
     for record in records:
@@ -226,6 +229,22 @@ def dernier_releve_par_sonde(connexion) -> list[dict]:
             lesReleves.append({"idSonde": record[0], "nom":record[1], "temp":record[2], "hum":record[3], "date": record[4].strftime("%d-%m-%Y %H:%M:%S")})
         cursor.close()
     return lesReleves
+
+
+def recup_nb_releve_sonde(conn, idsonde):
+    """
+    Récupère le nombre de relevés enregistrés pour une sonde donnée
+
+    param conn: Connexion à la base de donnée
+    param idsonde: Identifiant de la sonde
+    return: Nombre de relevés pour la sonde passée en paramètre
+    """
+    req = f"SELECT COUNT(*) FROM sonde_has_releve WHERE Sonde_idSonde = {idsonde}"
+    cursor = conn.cursor()
+    cursor.execute(req)
+    record = cursor.fetchone()[0]
+    cursor.close()
+    return record
 
 
 def convertit_date(chaine: str) -> str:

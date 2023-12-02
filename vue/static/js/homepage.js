@@ -12,7 +12,7 @@ function afficherGraphique(type, sonde, nbreleve) {
   let ctx = document.getElementById('myChart').getContext('2d');
   
   // Effectuer une requête GET avec la Fetch API
-  fetch(`http://127.0.0.1:5000/${sonde}/${nbreleve}`)
+  fetch(`http://127.0.0.1:5000/releve/${sonde}/${nbreleve}`)
     .then(response => {
       if (!response.ok) {
         throw new Error('La requête a échoué avec le statut:' + response.status);
@@ -64,7 +64,7 @@ function afficherGraphique(type, sonde, nbreleve) {
 function afficherHistorique(sonde, nbreleve) {
 
   // Effectuer une requête GET avec la Fetch API
-  fetch(`http://127.0.0.1:5000/${sonde}/${nbreleve}`)
+  fetch(`http://127.0.0.1:5000/releve/${sonde}/${nbreleve}`)
     .then(response => {
       if (!response.ok) {
         throw new Error('La requête a échoué avec le statut:' + response.status);
