@@ -90,19 +90,23 @@ function afficherHistorique(sonde, nbreleve) {
         }
         if (data[i].temp > 25) {
           picto += "soleil.png";
+          alt = "Soleil";
         }
         else if (data[i].temp > 9.9) {
           picto += "eclaircies.png";
+          alt = "Eclaircies";
         }
         else if (data[i].temp > 0) {
           picto += "couvert.png";
+          alt = "Couvert";
         }
         else {
           picto += "neige.png";
+          alt = "Eneigé";
         }
         contenuHistorique += `
         <tr class="cell">
-        <td><img src="${picto}"><br>${data[i].temp}°C</td>
+        <td><img src="${picto}" alt="${alt}"><br>${data[i].temp}°C</td>
         <td ${laClasse}>${data[i].hum !== '' ? data[i].hum + '%' : '-</td>'}
         <td>${data[i].date}</td>
       </tr>`

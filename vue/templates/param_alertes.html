@@ -12,8 +12,8 @@
             alert("{{ message }}");
         </script>
         {% endif %}
-        <div class="creation-alerte">
-            <form method="POST" action="">
+        <form method="POST" action="">
+            <div class="creation-alerte">
                 <fieldset>
                     <legend>Sonde concernée par l'alerte :</legend>
                     <div id="select-sensor">
@@ -34,17 +34,17 @@
                         <label for="temperature">Température</label><br>
                         <input type="radio" id="humidite" name="type" value="Humidité">
                         <label for="humidite">Humidité</label>
-                    </div>
-                </fieldset>
-                <fieldset>
-                    <div id="select-sens">
-                        <legend>Sens :</legend>
+                    </fieldset>
+                </div>
+                <div id="select-sens">
+                    <fieldset>
+                        <legend>Signe :</legend>
                         <input type="radio" id="superieur" name="sens" value=">" checked>
                         <label for="superieur">></label><br>
                         <input type="radio" id="inferieur" name="sens" value="<">
                         <label for="inferieur"><</label>
-                    </div>
-                </fieldset>
+                    </fieldset>
+                </div>
                 <label>Seuil : </label>
                 <input id="seuil" name="seuil" type="number" min="-6" max="99" placeholder="Valeur seuil" class="seuil" />
             <p>

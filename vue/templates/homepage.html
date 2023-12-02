@@ -32,13 +32,13 @@
                 <th class="coltitre2">Température</th>
                 {% for rel in data %}
                 {% if rel.temp > 25 %}
-                <td class="cell-img"><img src="static/img/soleil.png"><br>{{ rel.temp }}°C </td>
+                <td class="cell-img"><img src="static/img/soleil.png" alt="Soleil"><br>{{ rel.temp }}°C </td>
                 {% elif rel.temp > 9.9 %}
-                <td class="cell-img"><img src="static/img/eclaircies.png"><br>{{ rel.temp }}°C </td>
+                <td class="cell-img"><img src="static/img/eclaircies.png" alt="Eclaircies"><br>{{ rel.temp }}°C </td>
                 {% elif rel.temp > 0 %}
-                <td class="cell-img"><img src="static/img/couvert.png"><br>{{ rel.temp }}°C </td>
+                <td class="cell-img"><img src="static/img/couvert.png" alt="Couvert"><br>{{ rel.temp }}°C </td>
                 {% else %}
-                <td class="cell-img"><img src="static/img/neige.png"><br>{{ rel.temp }}°C </td>
+                <td class="cell-img"><img src="static/img/neige.png" alt="Enneigé"><br>{{ rel.temp }}°C </td>
                 {% endif %}
                 {% endfor %}
                 {% elif i == 2 %}
