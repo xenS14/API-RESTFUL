@@ -1,4 +1,43 @@
-
-.btn {
-    height: 2.3em;
-}
+body {
+    background-color: rgb(0, 110, 255);
+    color: rgb(255,255,255);
+    font-size: 1.2em;
+  }
+  
+  .btn {
+      height: 2.3em;
+  }
+  
+  div {
+    margin-top: 1em;
+  }
+  
+  fieldset, legend {
+    background-color: rgb(0, 153, 255);
+    border: 2px solid;
+    border-color: black;
+  }
+  
+  legend {
+    padding: 6px;
+  }
+  
+  #select-sonde {
+    display: flex;
+    justify-content: center;
+  }
+  
+  #select-type-sens {
+    display: flex;
+    justify-content: center;
+  }
+  
+  #select-sens {
+    display: flex;
+    justify-content: center;
+  }
+  
+  .titre-page {
+    display: flex;
+    justify-content: center;
+  }

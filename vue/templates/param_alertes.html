@@ -1,10 +1,9 @@
 <!DOCTYPE html>
 <html>
     <head>
-      <title>{{ title }}</title>
+      <title>Paramétrage des alertes</title>
       <meta charset="utf-8">
       <link rel="stylesheet" href="{{ url_for('static', filename='css/param_alertes.css') }}">
-      <script>src="{{ url_for('static', filename='js/param_alertes.js') }}"</script>
     </head>
     <body>
         {% if message != '' %}
@@ -12,31 +11,30 @@
             alert("{{ message }}");
         </script>
         {% endif %}
-        <form method="POST" action="">
-            <div class="creation-alerte">
+        <div class="creation-alerte">
+            <form method="POST" action="">
+                <h1 class="titre-page">Création d'une alerte</h1>
+                <div id="select-sonde">
+                    <fieldset>
+                        <legend>Sonde concernée par l'alerte :</legend>
+                        {% for i in range(sondes|length) %}
+                        {% if i == 0 %}
+                        <input type="radio" id={{ sondes[i].nom }} name="sonde" value={{ sondes[i].id }} checked>
+                        {% else %}
+                        <input type="radio" id={{ sondes[i].nom }} name="sonde" value={{ sondes[i].id }}>
+                        {% endif %}
+                        <label for={{ sondes[i].nom }}>{{ sondes[i].nom }}</label>
+                        {% endfor %}
+                    </fieldset>
+                </div>
+                <div id="select-type-sens">
                 <fieldset>
-                    <legend>Sonde concernée par l'alerte :</legend>
-                    <div id="select-sensor">
-                    {% for i in range(sondes|length) %}
-                    {% if i == 0 %}
-                    <input type="radio" id={{ sondes[i].nom }} name="sonde" value={{ sondes[i].id }} checked>
-                    {% else %}
-                    <input type="radio" id={{ sondes[i].nom }} name="sonde" value={{ sondes[i].id }}>
-                    {% endif %}
-                    <label for={{ sondes[i].nom }}>{{ sondes[i].nom }}</label>
-                    {% endfor %}
-                    </div>
-                  </fieldset>
-                <fieldset>
-                    <div id="select-type">
                         <legend>Type d'alerte :</legend>
                         <input type="radio" id="temperature" name="type" value="Température" checked>
                         <label for="temperature">Température</label><br>
                         <input type="radio" id="humidite" name="type" value="Humidité">
                         <label for="humidite">Humidité</label>
                     </fieldset>
-                </div>
-                <div id="select-sens">
                     <fieldset>
                         <legend>Signe :</legend>
                         <input type="radio" id="superieur" name="sens" value=">" checked>

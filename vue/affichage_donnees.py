@@ -82,7 +82,7 @@ def lancer_app():
             connexion = connexion_bdd(user, host, db)
             sondes = recup_sondes(connexion)
             connexion.close()
-            return render_template('templates/param_alertes.html', title='Définition d\'une alerte', sondes=sondes, message='')
+            return render_template('templates/param_alertes.html', sondes=sondes, message='')
         elif request.method == "POST":
             tabDonnees = [request.form["seuil"], request.form["freq"], request.form["type"], request.form["sens"], request.form["sonde"]]
             if tabDonnees[0] == '' or tabDonnees[1] == '':
