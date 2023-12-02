@@ -3,6 +3,10 @@ import mysql.connector
 import time
 from datetime import datetime, timedelta
 from modele.var_globale import *
+import smtplib
+from requests_oauthlib import OAuth2Session
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 
 
 def connexion_bdd(user: str, host: str, db: str):
@@ -235,7 +239,7 @@ def dernier_releve_par_sonde(connexion):
         cursor.execute(req)
         record = cursor.fetchone()
         if record != None:
-            lesReleves.append({"idsonde": record[0], "nom":record[1], "temp":record[2], "humid":record[3], "date": record[4]})
+            lesReleves.append({"idsonde": record[0], "nom":record[1], "temp":record[2], "humid":record[3], "date": record[4].strftime("%d-%m-%Y %H:%M:%S")})
         cursor.close()
     return lesReleves
 
@@ -325,8 +329,8 @@ def gestion_alerte(conn, lesReleves: list[dict]):
         for alerte in lesAlertes:
             # Vérifie si le seuil et le délai d'envoi sont dépassés 
             if verif_alerte(conn, alerte, releve):
-                envoiMail(conn, alerte)
-                majAlerte(conn, alerte)        
+                if envoiMail(conn, alerte, releve):
+                    majAlerte(conn, alerte)        
 
 
 def verif_alerte(conn, alerte: dict, rel: dict) -> bool:
@@ -372,10 +376,74 @@ def check_delai(conn, alerte: dict) -> bool:
         return False
 
 
-def envoiMail(conn, alerte: dict):
+def envoiMail(conn, alerte: dict, releve: dict):
     """
     Envoi le mail à l'utilisateur
     """
+    # Récupère les infos de l'utilisateur
+    cursor = conn.cursor()
+    cursor.execute(f"SELECT * FROM utilisateur WHERE idUtilisateur = {alerte["idUser"]}")
+    user = cursor.fetchone()
+    cursor.close()
+    cursor = conn.cursor()
+    cursor.execute(f"SELECT Nom FROM sonde WHERE idSonde = {releve["idsonde"]}")
+    nomSonde = cursor.fetchone()[0]
+    cursor.close()
+    # Création du message
+    if alerte["ope"] == ">":
+        operateur = "supérieure"
+    elif alerte["ope"] == "<":
+        operateur = "inférieure"
+    if alerte["type"] == "Température":
+        unite = "°C"
+        valeur = releve["temp"]
+    else:
+        unite = "%"
+        valeur = releve["humid"]
+    date = releve["date"].split(' ')
+    message = (
+        f"Bonjour {user[1]} {user[2]},\n"
+        f"La sonde n°{releve["idsonde"]} ({nomSonde}) a détecté une {alerte["type"].lower()} {operateur} à {alerte["niv"]}{unite} ({valeur}{unite}) "
+        f"le {date[0]} à {date[1]}."
+               )
+    # Création de la session SMTP
+    # Informations du compte Gmail
+    sender_email = user[4]
+    sender_password = "vscdmmunfvpdqdvl"
+
+    # Adresse e-mail du destinataire
+    recipient_email = user[4]
+
+    # Création du message
+    subject = f"Alerte de {alerte["type"].lower()} sur la sonde n°{releve["idsonde"]}"
+    body = message
+
+    message = MIMEMultipart()
+    message["From"] = sender_email
+    message["To"] = recipient_email
+    message["Subject"] = subject
+    message.attach(MIMEText(body, "plain"))
+
+    # Connexion au serveur SMTP de Gmail
+    try:
+        with smtplib.SMTP("smtp.gmail.com", 587) as server:
+            server.starttls()
+
+            # Authentification
+            server.login(sender_email, sender_password)
+
+            # Envoi de l'e-mail
+            server.sendmail(sender_email, recipient_email, message.as_string())
+
+        print("E-mail envoyé avec succès.")
+        return True
+
+    except smtplib.SMTPAuthenticationError:
+        print("Échec de l'authentification. Assurez-vous que l'accès aux applications moins sécurisées est activé.")
+        return False
+    except Exception as e:
+        print(f"Erreur lors de l'envoi de l'e-mail : {e}")
+        return False
 
 
 def majAlerte(conn, alerte: dict):
@@ -390,7 +458,9 @@ def majAlerte(conn, alerte: dict):
 
 
 def recup_alertes(conn, sonde: str) -> list[dict]:
-    """Récupère la liste des alertes actives"""
+    """
+    Récupère la liste des alertes actives
+    """
     cursor = conn.cursor()
     cursor.execute(f"SELECT Niv, Operateur, Type, frequence_envoi_mail, dernier_envoi, Utilisateur_idUtilisateur, idAlerte FROM alerte WHERE Active = 1 AND Sonde_idSonde = {sonde}")
     records = cursor.fetchall()

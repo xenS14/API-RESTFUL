@@ -67,7 +67,7 @@ def lancer_app():
                 connexion = connexion_bdd(user, host, db)
                 sondes = get_sondes(connexion)
                 connexion_ferme(connexion)
-                return render_template('templates/param_alertes.html', title='Définition d\'une alerte', sondes=sondes, message="Veuillez renseignez tous les champs.")
+                return render_template('templates/param_alertes.html', title='Définition d\'une alerte', sondes=sondes, message="Veuillez renseignez les champs seuil ET fréquence.")
             connexion = connexion_bdd(user, host, db)
             cree_alerte(connexion, tabDonnees)
             data = recup_cinq_releves_sonde(connexion, 62190434)

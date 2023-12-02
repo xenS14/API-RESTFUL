@@ -75,7 +75,7 @@
             <button id="hum-btn" onclick="afficherGraphique('humidite', document.querySelector('input[name=sonde]:checked').value, document.querySelector('input[name=qte]:checked').value)">Humidité</button>
             <button id="histo-btn" onclick="afficherHistorique(document.querySelector('input[name=sonde]:checked').value, document.querySelector('input[name=qte]:checked').value)">Historique</button>
             <fieldset>
-                <legend>Sélectionnez la sonde :</legend>
+                <legend>Sélectionnez une sonde :</legend>
                 <div id="select-sensor">
                 {% for i in range(data|length) %}
                 {% if i == 0 %}
