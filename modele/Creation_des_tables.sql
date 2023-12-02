@@ -104,7 +104,7 @@ CREATE TABLE utilisateur (
 -- Déchargement des données de la table utilisateur
 --
 
-INSERT INTO utilisateur (idUtilisateur, Prenom, Nom, Numero_telephone, Email, Identifiant, Mot_de_passe, account_API) VALUES
+INSERT INTO utilisateur (idUtilisateur, Prenom, Nom, Numero_telephone, Email, Identifiant, Mot_de_passe, account_API, mdp_appli) VALUES
 (1, 'Jack', 'THIEM', 'jackthiem311@gmail.com', NULL, NULL, NULL, '16L1SPQZS3', NULL);
 
 --
