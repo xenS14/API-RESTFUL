@@ -409,7 +409,7 @@ def envoiMail(conn, alerte: dict, releve: dict):
     # Création de la session SMTP
     # Informations du compte Gmail
     sender_email = user[4]
-    sender_password = "vscdmmunfvpdqdvl"
+    sender_password = user[8]
 
     # Adresse e-mail du destinataire
     recipient_email = user[4]
