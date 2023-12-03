@@ -10,8 +10,10 @@ function afficherHistorique(sonde, nbreleve) {
     })
     .then(data => {
       // Traiter les données ici
-      let elt = document.getElementById('monChart')
-      let contenuHistorique = `<div class="divtab">
+      let elt = document.getElementById('monChart');
+      let contenuHistorique;
+      if (data.length > 0) {
+      contenuHistorique = `<div class="divtab">
       <p id="presenttab">Les ${nbreleve} derniers relevés de la sonde ${data[0].nom}</p>
       <table class="tabdatas">
         <tr>
@@ -37,19 +39,25 @@ function afficherHistorique(sonde, nbreleve) {
           picto += "couvert.png";
           alt = "Couvert";
         }
-        else {
-          picto += "neige.png";
-          alt = "Eneigé";
-        }
-        contenuHistorique += `
+          else {
+            picto += "neige.png";
+            alt = "Eneigé";
+          }
+          contenuHistorique += `
         <tr class="cell">
         <td><img src="${picto}" alt="${alt}"><br>${data[i].temp}°C</td>
         <td ${laClasse}>${data[i].hum !== '' ? data[i].hum + '%' : '-</td>'}
         <td>${data[i].date}</td>
       </tr>`
-      }
-      contenuHistorique += `</table>
+        }
+        contenuHistorique += `</table>
     </div>`
+      }
+      else {
+        contenuHistorique = `<div class="divtab">
+        <p id="presenttab">Il n'y a pas encore de relevés pour cette sonde.</p>
+        </div>`
+      }
       elt.innerHTML = contenuHistorique;
     })
     .catch(error => {
@@ -82,6 +90,7 @@ function afficherGraphique(type, sonde, nbreleve) {
       return response.json();
     })
     .then(data => {
+      if (data.length > 0) {
       let donnees = []
       let lbl = []
       let unite;
@@ -115,9 +124,17 @@ function afficherGraphique(type, sonde, nbreleve) {
         }
       };
       myChart = new Chart(ctx, config);
+      }
+      else {
+        let elt = document.getElementById('monChart');
+        let contenuHistorique = `<div class="divtab">
+        <p id="presenttab">Il n'y a pas encore de relevés pour cette sonde.</p>
+        </div>`
+        elt.innerHTML = contenuHistorique;
+      }
     })
     .catch(error => {
       console.error('Erreur de la requête:', error);
     }
-  );
+    );
 }

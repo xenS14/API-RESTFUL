@@ -77,13 +77,13 @@
             <fieldset>
                 <legend>Sélectionnez une sonde :</legend>
                 <div id="select-sensor">
-                {% for i in range(data|length) %}
+                {% for i in range(sondes|length) %}
                 {% if i == 0 %}
-                <input type="radio" id={{ data[i].nom }} name="sonde" value={{ data[i].idSonde }} checked>
+                <input type="radio" id={{ sondes[i].nom }} name="sonde" value={{ sondes[i].id }} checked>
                 {% else %}
-                <input type="radio" id={{ data[i].nom }} name="sonde" value={{ data[i].idSonde }}>
+                <input type="radio" id={{ sondes[i].nom }} name="sonde" value={{ sondes[i].id }}>
                 {% endif %}
-                <label for={{ data[i].nom }}>{{ data[i].nom }}</label>
+                <label for={{ sondes[i].nom }}>{{ sondes[i].nom }}</label>
                 {% endfor %}
                 </div>
               </fieldset>

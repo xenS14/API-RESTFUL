@@ -13,11 +13,12 @@ def lancer_app():
         if request.method == "GET":
             connexion = connexion_bdd(user, host, db)
             data = dernier_releve_par_sonde(connexion)
+            sondes = recup_sondes(connexion)
             alertes = recup_liste_alertes(connexion)
             util = recup_user(connexion)
             ip = recup_adresse_ip()
             connexion.close()
-            return render_template("templates/homepage.html", data=data, lesalertes=alertes, util=util, ip=ip)
+            return render_template("templates/homepage.html", data=data, lesalertes=alertes, util=util, ip=ip, sondes=sondes)
     
     # Récupère un nombre déterminé de relevés pour la sonde passée en paramètre
     @app.route("/releve/<idsonde>/<nbreleve>")
