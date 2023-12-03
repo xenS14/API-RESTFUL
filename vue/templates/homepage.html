@@ -106,6 +106,9 @@
         
     <h1 class="map-title">Mes alertes :</h1>
     <div class="alerte-container">
+        <div class="alert-buttons">
+            <button id="cree-alerte-btn" onclick="window.location=`http://127.0.0.1:5000/param_alertes`">Créer une alerte</button>
+        </div>
         {% if lesalertes|length == 0 %}
         <p class="title-alerte">Vous n'avez pas d'alertes</p>
         {% else %}
@@ -117,16 +120,13 @@
         {% for i in range(lesalertes|length) %}
         {% if lesalertes[i].type == "Humidité" %}
         <p>Alerte n°{{ i+1 }} : Sonde {{ lesalertes[i].sonde }} - {{ lesalertes[i].type }} {{ lesalertes[i].operateur }} {{ lesalertes[i].seuil }}% - Envoi
-            toutes les {{ lesalertes[i].freq }} heures<br></p>
+            toutes les {{ lesalertes[i].freq }} heures</p>
         {% else %}
         <p>Alerte n°{{ i+1 }} : Sonde {{ lesalertes[i].sonde }} - {{ lesalertes[i].type }} {{ lesalertes[i].operateur }} {{ lesalertes[i].seuil }}°C - Envoi
-            toutes les {{ lesalertes[i].freq }} heures<br></p>
+            toutes les {{ lesalertes[i].freq }} heures</p>
         {% endif %}
         {% endfor %}
         {% endif %}
-        <div class="alert-buttons">
-            <button id="cree-alerte-btn" onclick="window.location=`http://127.0.0.1:5000/param_alertes`">Créer une alerte</button>
-        </div>
     </div>
 </body>
 <!-- <footer>

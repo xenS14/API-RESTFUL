@@ -62,7 +62,7 @@ function afficherHistorique(sonde, nbreleve) {
 
 function reinitialiserGraph() {
   let champ = document.getElementById('monChart')
-  champ.innerHTML = `<canvas id="myChart" width="400" height="300"></canvas>`
+  champ.innerHTML = `<canvas id="myChart" width="400" height="480"></canvas>`
 }
 
 

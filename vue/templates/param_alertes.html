@@ -43,15 +43,17 @@
                         <label for="inferieur"><</label>
                     </fieldset>
                 </div>
-                <label>Seuil : </label>
-                <input id="seuil" name="seuil" type="number" min="-6" max="99" placeholder="Valeur seuil" class="seuil" />
-            <p>
-                <label>Fréquence : </label>
+                <div class="div-seuil-freq">
+                    <label for="seuil">Seuil :</label>
+                    <input id="seuil" name="seuil" type="number" min="-6" max="99" placeholder="Valeur seuil" class="seuil" />
+                </div>
+                  <div class="div-seuil-freq">
+                <label for="freq">Fréquence :</label>
                 <input id="freq" name="freq" type="number" min="1" max="24" placeholder="Fréquence (heures)" class="seuil" />
-            </p>
-            <p>
-                <input class="btn" type="submit" value="Créer alerte"></input>
-            </p>
+                  </div>
+                  <div class="btn">
+                <input class="btn-submit" type="submit" value="Créer alerte"></input>
+              </div>
             </form>
         </div>
     </body>

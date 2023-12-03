@@ -475,7 +475,7 @@ def recup_liste_alertes(connexion) -> list:
     return: Liste des alertes
     """
     cursor = connexion.cursor()
-    cursor.execute("SELECT * FROM alerte WHERE Utilisateur_idUtilisateur = 1")
+    cursor.execute("SELECT * FROM alerte WHERE Utilisateur_idUtilisateur = 1 ORDER BY Sonde_idSonde")
     records = cursor.fetchall()
     lesAlertes = []
     for record in records:
