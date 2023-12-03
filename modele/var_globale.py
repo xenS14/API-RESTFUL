@@ -18,3 +18,6 @@ leMois = {
     "Nov": "11",
     "Dec": "12",
 }
+
+# Quantité de relevés qui sera demandée au Web Service
+nbReleveWs = 3

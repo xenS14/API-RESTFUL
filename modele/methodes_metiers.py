@@ -88,8 +88,9 @@ def ajout_releve_sonde(connexion, datas: tuple[list, dict]):
             cursor.execute(req)
             connexion.commit()
         except:
-            print("Le relevé de sonde n'a pas pu être ajouté")
+            print(f"Le relevé {datas[i]['idReleve']} de la sonde {datas[i]['idSonde']} n'a pas pu être ajouté")
     cursor.close()
+    print("\n")
 
 
 def ajout_releve(connexion, datas: tuple[list, dict]):
@@ -106,7 +107,7 @@ def ajout_releve(connexion, datas: tuple[list, dict]):
             cursor.execute(req)
             connexion.commit()
         except:
-            print("Le relevé n'a pas pu être ajouté")
+            print(f"Le relevé {datas[i]['id']} n'a pas pu être ajouté")
     cursor.close()
 
 
@@ -174,7 +175,7 @@ def recup_anciens_releves(connexion) -> list:
     return: Liste des id de tous les relevés enregistrés dans la base de données
     """
     cursor = connexion.cursor()
-    cursor.execute("SELECT idReleve FROM releve")
+    cursor.execute(f"SELECT idReleve FROM releve ORDER BY idReleve DESC LIMIT {nbReleveWs}")
     records = cursor.fetchall()
     lesId = []
     for record in records:
@@ -188,6 +189,7 @@ def recup_sondes(connexion, idSonde = '') -> list:
     Récupère la liste des sondes enregistrées dans la base de données
     
     param connexion: Connexion à la base de données
+    param idSonde: Identifiant de la sonde dont on veut récupérer les données
     return: Liste des sondes
     """
     where = ''
@@ -267,7 +269,7 @@ def recup_datas_ws(cle: str) -> tuple[list, list]:
     param cle: Clé de l'account pour se connecter au Webservice
     return: Liste des relevés provenant du Webservice
     """
-    response = requests.get(f"http://app.objco.com:8099/?account={cle}&limit=3")
+    response = requests.get(f"http://app.objco.com:8099/?account={cle}&limit={nbReleveWs}")
     if response.status_code != 200:
         print("Erreur de connexion")
     dico = response.json()
@@ -513,40 +515,44 @@ def trt_chaine(conn, liste_releves: list) -> tuple[list, list]:
     return: Liste des relevés + liste des relevés de sonde à envoyer respectivement dans les tables "releve" et "sonde_has_releve" de la base de données
     """
     # Récupère la liste des sondes
-    liste_sondes = recup_sondes(conn)
-    lesSondes = []
-    for sonde in liste_sondes:
-        if sonde["statut"] == 1:
-            lesSondes.append(sonde["id"])
+    lesIdSondes = []
     # Stocke les relevés à enregistrer dans la BDD
-    les_releves = []
+    lesReleves = []
     # Stocke les releves_has_sonde à enregistrer dans la BDD
-    les_rel_sonde = []
+    lesRelSonde = []
+    listeSondes = recup_sondes(conn)
+    for sonde in listeSondes:
+        if sonde["statut"] == 1:
+            lesIdSondes.append(sonde["id"])
     # Récupère la liste des relevés déjà présents dans la BDD
     anciens_releves = recup_anciens_releves(conn)
     for releve in liste_releves:
         # Si le relevé n'est pas déjà présent dans la BDD, récupère ses infos
         if releve[0] not in anciens_releves:
-            # Récupère la date dans un format adapté à la BDD
+            # Récupère la date et la convertit dans un format adapté à celui de la BDD
             date = convertit_date(releve[2])
             # Ajoute les données relatives au relevé dans la liste
-            les_releves.append({"id": releve[0], "date": date})
+            lesReleves.append({"id": releve[0], "date": date})
             # Récupère les données du relevé pour chaque sonde présente dans ce relevé
-            for sonde in lesSondes:
+            for sonde in lesIdSondes:
                 chaine = releve[1]
                 # Cherche si la sonde est présent dans le relevé
                 pos = chaine.find(sonde)
                 if pos != -1:
-                    volt = convert_hexa(chaine[pos + 10 : pos + 14]) / 1000  # Voltage
-                    temp = convert_hexa(chaine[pos + 16 : pos + 18]) / 10  # Température
-                    signeTemp = chaine[pos + 14 : pos + 16]  # Signe de la température (+ ou -)
+                    # Voltage
+                    volt = convert_hexa(chaine[pos + 10 : pos + 14]) / 1000
+                    # Température
+                    temp = convert_hexa(chaine[pos + 16 : pos + 18]) / 10
+                    signeTemp = chaine[pos + 14 : pos + 16]
                     temp = float("-" + str(temp)) if signeTemp == "40" else float(temp)
-                    humid = convert_hexa(chaine[pos + 18 : pos + 20])  # Taux d'humidité
+                    # Taux d'humidité
+                    humid = convert_hexa(chaine[pos + 18 : pos + 20])
                     humid = "" if humid == 255 else str(humid)
-                    rssi = "-" + str(convert_hexa(chaine[pos + 20 : pos + 22]))  # RSSI
+                    # RSSI
+                    rssi = "-" + str(convert_hexa(chaine[pos + 20 : pos + 22]))
                     rssi = float(rssi)
                     # Ajoute les données relatives au relevé de sonde dans la liste
-                    les_rel_sonde.append(
+                    lesRelSonde.append(
                         {
                             "idSonde": sonde,
                             "idReleve": releve[0],
@@ -559,7 +565,7 @@ def trt_chaine(conn, liste_releves: list) -> tuple[list, list]:
                     # Affiche dans la console les relevés récupérés
                     print("Sonde n° " + str(chaine[pos : pos + 8]) + " || Relevé n° : " + str(releve[0]) + " || " + str(releve[2]))
                     print("Voltage : " + str(volt) + "V || Température : " + str(temp) + "°C || Humidité : " + humid + "% || RSSI : " + str(rssi) + "dBm\n")
-    return les_releves, les_rel_sonde
+    return lesReleves, lesRelSonde
 
 
 def lance_procedure_recup(conn):
@@ -579,11 +585,12 @@ def lance_procedure_recup(conn):
         rel, rel_sonde = trt_chaine(conn, datas)
 
         # Envoi les données vers la base de données
-        ajout_releve(conn, rel)
-        ajout_releve_sonde(conn, rel_sonde)
+        if len(rel) > 0:
+            ajout_releve(conn, rel)
+            ajout_releve_sonde(conn, rel_sonde)
 
         # Récupère le dernier relevé de chaque sonde
-        lesReleves = dernier_releve_par_sonde(conn)
+        # lesReleves = dernier_releve_par_sonde(conn)
 
         # Gère l'envoi des alertes en cas de seuil dépassé
         #gestion_alerte(conn, lesReleves)
