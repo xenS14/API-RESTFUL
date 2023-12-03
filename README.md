@@ -3,7 +3,7 @@ L'API permet de récupérer des données météorologiques auprès d'un Webservi
 
 Depuis l'interface web, différentes routes sont possibles pour récupérer des données :
 
-- GET /releve/<idsonde>/<nbreleve>
+- GET /releve/%idsonde/%nbreleve
 Récupère le nombre de relevés renseigné dans l'URL pour la sonde renseignée. Les données sortent dans l'ordre descendant des identifiants de relevé (les si nbreleve = 5, les données reçues correspondront aux 5 plus récentes pour la sonde renseignée).
 
 - GET 
