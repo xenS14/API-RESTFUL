@@ -14,8 +14,9 @@ def lancer_app():
             connexion = connexion_bdd(user, host, db)
             data = dernier_releve_par_sonde(connexion)
             alertes = recup_liste_alertes(connexion)
+            util = recup_user(connexion)
             connexion.close()
-            return render_template("templates/homepage.html", title="Accueil", data=data, lesalertes=alertes)
+            return render_template("templates/homepage.html", title="Accueil", data=data, lesalertes=alertes, util=util)
     
     # Récupère un nombre déterminé de relevés pour la sonde passée en paramètre
     @app.route("/releve/<idsonde>/<nbreleve>")

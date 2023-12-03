@@ -1,10 +1,9 @@
-import requests
+import requests, json
 import mysql.connector
 import time
 from datetime import datetime, timedelta
 from modele.var_globale import *
 import smtplib
-from requests_oauthlib import OAuth2Session
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
@@ -13,7 +12,7 @@ def connexion_bdd(user: str, host: str, db: str):
     """
     Ouvre la connexion à la base de données
     
-    param user: Identifiant de l'utilisateur
+    param user: Identifiant de l'utilisateur de la base de données
     param host: Adresse de la base de données
     param db: Nom de la base de données
     return: Connexion à la base de données
@@ -22,7 +21,7 @@ def connexion_bdd(user: str, host: str, db: str):
     return conn
 
 
-def recup_acc_api(conn, idUser = 1) -> str:
+def recup_user(conn, idUser = 1) -> str:
     """
     Récupère la clé pour interagir avec le Webservice
     
@@ -31,10 +30,21 @@ def recup_acc_api(conn, idUser = 1) -> str:
     return: Clef account du Webservice
     """
     cursor = conn.cursor()
-    cursor.execute(f"SELECT account_API FROM utilisateur WHERE idUtilisateur = {idUser}")
-    record = cursor.fetchone()[0]
+    cursor.execute(f"SELECT * FROM utilisateur WHERE idUtilisateur = {idUser}")
+    record = cursor.fetchone()
     cursor.close()
-    return record
+    utilisateur = {
+        "id": record[0],
+        "prenom": record[1],
+        "nom": record[2],
+        "num_tel": record[3],
+        "email": record[4],
+        "id_site": record[5],
+        "mdp_site": record[6],
+        "acc_api": record[7],
+        "mdp_appli": record[8]
+    }
+    return utilisateur
 
 
 def convert_hexa(hexa: str) -> int:
@@ -90,7 +100,6 @@ def ajout_releve_sonde(connexion, datas: tuple[list, dict]):
         except:
             print(f"Le relevé {datas[i]['idReleve']} de la sonde {datas[i]['idSonde']} n'a pas pu être ajouté")
     cursor.close()
-    print("\n")
 
 
 def ajout_releve(connexion, datas: tuple[list, dict]):
@@ -271,7 +280,7 @@ def recup_datas_ws(cle: str) -> tuple[list, list]:
     """
     response = requests.get(f"http://app.objco.com:8099/?account={cle}&limit={nbReleveWs}")
     if response.status_code != 200:
-        print("Erreur de connexion")
+        print("Erreur de connexion au Webservice")
     dico = response.json()
     # Stocke les relevés sous forme d'un tableau de tableaux à trois colonnes (0 = id, 1 = chaîne hexa, 2 = date)
     liste_releves = []
@@ -294,17 +303,18 @@ def cree_alerte(conn, datas: list):
     cursor.close()
 
 
-def gestion_alerte(conn, lesReleves: list[dict]):
+def gestion_alerte(conn):
     """
     Gère l'envoi des alertes
     
     param conn: Connexion à la base de données
-    param lesReleves: Liste des relevés à vérifier
     """
+    # Récupère le dernier relevé de chaque sonde
+    lesReleves = dernier_releve_par_sonde(conn)
     # Parcourt la liste des relevés de sonde
     for releve in lesReleves:
         # Récupère la liste des alertes sur la sonde en cours
-        lesAlertes = recup_alertes_sonde(conn, releve["idsonde"])
+        lesAlertes = recup_alertes_sonde(conn, releve["idSonde"])
         # Parcourt la liste des alertes
         for alerte in lesAlertes:
             # Vérifie si le seuil et le délai d'envoi sont dépassés 
@@ -324,16 +334,16 @@ def verif_alerte(conn, alerte: dict, rel: dict) -> bool:
     """
     seuilDep = False
     dateOk = False
-    if rel["humid"] != "":
+    if rel["hum"] != "":
         if alerte["ope"] == ">":
             if alerte["type"] == "Température" and rel["temp"] > alerte["niv"]:
                 seuilDep = True
-            elif alerte["type"] == "Humidité" and float(rel["humid"]) > alerte["niv"]:
+            elif alerte["type"] == "Humidité" and float(rel["hum"]) > alerte["niv"]:
                 seuilDep = True
         else:
             if alerte["type"] == "Température" and rel["temp"] < alerte["niv"]:
                 seuilDep = True
-            elif alerte["type"] == "Humidité" and float(rel["humid"]) < alerte["niv"]:
+            elif alerte["type"] == "Humidité" and float(rel["hum"]) < alerte["niv"]:
                 seuilDep = True
         # Si le seuil d'alerte a été dépassé
         if seuilDep:
@@ -379,10 +389,10 @@ def envoiMail(conn, alerte: dict, releve: dict) -> bool:
     # Récupère les infos de l'utilisateur
     cursor = conn.cursor()
     cursor.execute(f"SELECT * FROM utilisateur WHERE idUtilisateur = {alerte["idUser"]}")
-    user = cursor.fetchone()
+    util = cursor.fetchone()
     cursor.close()
     cursor = conn.cursor()
-    cursor.execute(f"SELECT Nom FROM sonde WHERE idSonde = {releve["idsonde"]}")
+    cursor.execute(f"SELECT Nom FROM sonde WHERE idSonde = {releve["idSonde"]}")
     nomSonde = cursor.fetchone()[0]
     cursor.close()
     # Création du message
@@ -395,24 +405,24 @@ def envoiMail(conn, alerte: dict, releve: dict) -> bool:
         valeur = releve["temp"]
     else:
         unite = "%"
-        valeur = releve["humid"]
+        valeur = releve["hum"]
     date = releve["date"].split(' ')
     message = (
-        f"Bonjour {user[1]} {user[2]},\n\n"
-        f"La sonde n°{releve["idsonde"]} ({nomSonde}) a détecté une {alerte["type"].lower()} {operateur} à {alerte["niv"]}{unite} ({valeur}{unite}) "
+        f"Bonjour {util[1]} {util[2]},\n\n"
+        f"La sonde n°{releve["idSonde"]} ({nomSonde}) a détecté une {alerte["type"].lower()} {operateur} à {alerte["niv"]}{unite} ({valeur}{unite}) "
         f"le {date[0]} à {date[1]}.\n\n"
         f"Votre service alerte."
                )
     # Création de la session SMTP
     # Informations du compte Gmail
-    sender_email = user[4]
-    sender_password = user[8]
+    sender_email = util[4]
+    sender_password = util[8]
 
     # Adresse e-mail du destinataire
-    recipient_email = user[4]
+    recipient_email = util[4]
 
     # Création du message
-    subject = f"Alerte de {alerte["type"].lower()} sur la sonde n°{releve["idsonde"]}"
+    subject = f"Alerte de {alerte["type"].lower()} sur la sonde n°{releve["idSonde"]}"
     body = message
 
     message = MIMEMultipart()
@@ -574,26 +584,23 @@ def lance_procedure_recup(conn):
 
     param conn: Connexion à la base de données
     """
-    # Récupère la clé pour se connecter au Webservice
-    cle = recup_acc_api(conn)
+    # Récupère l'utilisateur pour accéder à sa clé account et se connecter au Webservice
+    utilisateur = recup_user(conn)
 
     while True:
         # Récupère les données auprès du WebService à intervalle régulier
-        datas = recup_datas_ws(cle)
+        datas = recup_datas_ws(utilisateur["acc_api"])
 
         # Traite les données récupérées auprès du WebService
         rel, rel_sonde = trt_chaine(conn, datas)
 
-        # Envoi les données vers la base de données
+        # Si présence de nouveaux relevés, les envoie vers la base de données
         if len(rel) > 0:
             ajout_releve(conn, rel)
             ajout_releve_sonde(conn, rel_sonde)
 
-        # Récupère le dernier relevé de chaque sonde
-        # lesReleves = dernier_releve_par_sonde(conn)
-
         # Gère l'envoi des alertes en cas de seuil dépassé
-        #gestion_alerte(conn, lesReleves)
+        # gestion_alerte(conn)
 
         # Attend 5 minutes et 4 secondes
-        time.sleep(61)
+        time.sleep(60)

@@ -1,3 +1,65 @@
+function afficherHistorique(sonde, nbreleve) {
+
+  // Effectuer une requête GET avec la Fetch API
+  fetch(`http://127.0.0.1:5000/releve/${sonde}/${nbreleve}`)
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('La requête a échoué avec le statut:' + response.status);
+      }
+      return response.json();
+    })
+    .then(data => {
+      // Traiter les données ici
+      let elt = document.getElementById('monChart')
+      let contenuHistorique = `<div class="divtab">
+      <p id="presenttab">Les ${nbreleve} derniers relevés de la sonde ${data[0].nom}</p>
+      <table class="tabdatas">
+        <tr>
+          <td class="coltitre">Température</td>
+          <td class="coltitre">Humidité</td>
+          <td class="coltitre">Date du relevé</td>
+        </tr>`
+      for (let i = 0; i < data.length; i++) {
+        let laClasse = "";
+        let picto = "static/img/";
+        if (data[i].hum === '') {
+          laClasse += `class="sanshumid"`
+        }
+        if (data[i].temp > 25) {
+          picto += "soleil.png";
+          alt = "Soleil";
+        }
+        else if (data[i].temp > 9.9) {
+          picto += "eclaircies.png";
+          alt = "Eclaircies";
+        }
+        else if (data[i].temp > 0) {
+          picto += "couvert.png";
+          alt = "Couvert";
+        }
+        else {
+          picto += "neige.png";
+          alt = "Eneigé";
+        }
+        contenuHistorique += `
+        <tr class="cell">
+        <td><img src="${picto}" alt="${alt}"><br>${data[i].temp}°C</td>
+        <td ${laClasse}>${data[i].hum !== '' ? data[i].hum + '%' : '-</td>'}
+        <td>${data[i].date}</td>
+      </tr>`
+      }
+      contenuHistorique += `</table>
+    </div>`
+      elt.innerHTML = contenuHistorique;
+    })
+    .catch(error => {
+      // Gérer les erreurs ici
+      console.error('Erreur de la requête:', error);
+    }
+  );
+}
+
+
 function reinitialiserGraph() {
   let champ = document.getElementById('monChart')
   champ.innerHTML = `<canvas id="myChart" width="400" height="300"></canvas>`
@@ -55,68 +117,6 @@ function afficherGraphique(type, sonde, nbreleve) {
       myChart = new Chart(ctx, config);
     })
     .catch(error => {
-      console.error('Erreur de la requête:', error);
-    }
-  );
-}
-
-
-function afficherHistorique(sonde, nbreleve) {
-
-  // Effectuer une requête GET avec la Fetch API
-  fetch(`http://127.0.0.1:5000/releve/${sonde}/${nbreleve}`)
-    .then(response => {
-      if (!response.ok) {
-        throw new Error('La requête a échoué avec le statut:' + response.status);
-      }
-      return response.json();
-    })
-    .then(data => {
-      // Traiter les données ici
-      let elt = document.getElementById('monChart')
-      let contenuHistorique = `<div class="divtab">
-      <p id="presenttab">Les ${nbreleve} derniers relevés de la sonde ${data[0].nom}</p>
-      <table class="tabdatas">
-        <tr>
-          <td class="coltitre">Température</td>
-          <td class="coltitre">Humidité</td>
-          <td class="coltitre">Date du relevé</td>
-        </tr>`
-      for (let i = 0; i < data.length; i++) {
-        let laClasse = "";
-        let picto = "static/img/";
-        if (data[i].hum === '') {
-          laClasse += `class="sanshumid"`
-        }
-        if (data[i].temp > 25) {
-          picto += "soleil.png";
-          alt = "Soleil";
-        }
-        else if (data[i].temp > 9.9) {
-          picto += "eclaircies.png";
-          alt = "Eclaircies";
-        }
-        else if (data[i].temp > 0) {
-          picto += "couvert.png";
-          alt = "Couvert";
-        }
-        else {
-          picto += "neige.png";
-          alt = "Eneigé";
-        }
-        contenuHistorique += `
-        <tr class="cell">
-        <td><img src="${picto}" alt="${alt}"><br>${data[i].temp}°C</td>
-        <td ${laClasse}>${data[i].hum !== '' ? data[i].hum + '%' : '-</td>'}
-        <td>${data[i].date}</td>
-      </tr>`
-      }
-      contenuHistorique += `</table>
-    </div>`
-      elt.innerHTML = contenuHistorique;
-    })
-    .catch(error => {
-      // Gérer les erreurs ici
       console.error('Erreur de la requête:', error);
     }
   );
