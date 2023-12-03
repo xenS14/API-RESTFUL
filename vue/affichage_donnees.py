@@ -60,8 +60,9 @@ def lancer_app():
             connexion = connexion_bdd(user, host, db)
             sondes = recup_sondes(connexion)
             ip = recup_adresse_ip()
+            util = recup_user(connexion)
             connexion.close()
-            return render_template('templates/gestion_sondes.html', title='Gestion des sondes', sondes=sondes, ip=ip)
+            return render_template('templates/gestion_sondes.html', title='Gestion des sondes', sondes=sondes, ip=ip, util=util, message='')
         elif request.method == "POST":
             connexion = connexion_bdd(user, host, db)
             donneesAction = {"action": request.form["action"][:6], "id":request.form["action"][6:]}
@@ -69,7 +70,16 @@ def lancer_app():
                 suppr_sonde(connexion, donneesAction["id"])
             elif donneesAction["action"] == "ajoute":
                 datas = {"id": request.form["cree-id-sonde"], "nom": request.form["cree-nom-sonde"]}
-                ajout_sonde(connexion, datas)
+                if datas["id"] == '' or datas["nom"] == '':
+                    connexion = connexion_bdd(user, host, db)
+                    sondes = recup_sondes(connexion)
+                    ip = recup_adresse_ip()
+                    util = recup_user(connexion)
+                    message = "Veuillez renseigner un Id et un Nom pour la sonde."
+                    connexion.close()
+                    return render_template('templates/gestion_sondes.html', title='Gestion des sondes', sondes=sondes, ip=ip, util=util, message=message)
+                else:
+                    ajout_sonde(connexion, datas)
             elif donneesAction["action"] == "update":
                 datas = {"id": donneesAction["id"], "nom": request.form[f"name" + donneesAction["id"]], "statut": request.form[donneesAction["id"]]}
                 if datas["nom"] == "":
@@ -93,7 +103,7 @@ def lancer_app():
                 connexion = connexion_bdd(user, host, db)
                 sondes = recup_sondes(connexion)
                 connexion.close()
-                return render_template('templates/param_alertes.html', title='Définition d\'une alerte', sondes=sondes, message="Veuillez renseignez les champs seuil ET fréquence.")
+                return render_template('templates/param_alertes.html', sondes=sondes, message="Veuillez renseignez les champs seuil ET fréquence.")
             connexion = connexion_bdd(user, host, db)
             cree_alerte(connexion, tabDonnees)
             data = recup_des_releves_sonde(connexion, 62190434)

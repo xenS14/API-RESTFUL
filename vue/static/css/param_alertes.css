@@ -72,3 +72,9 @@ legend {
   border: 2px solid;
   border-color: black;
 }
+
+header {
+  padding: 30px 0;
+  background: rgb(0, 110, 255);
+  justify-content: space-between;
+  }
