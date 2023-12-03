@@ -54,10 +54,7 @@ def recup_adresse_ip():
     return: Adresse ip de l'utilisateur
     """
     nom_hote = socket.gethostname()
-
-    # Obtenez l'adresse IP associée au nom d'hôte
     adresse_ip = socket.gethostbyname(nom_hote)
-
     return adresse_ip
 
 

@@ -58,8 +58,9 @@ def lancer_app():
         if request.method == "GET":
             connexion = connexion_bdd(user, host, db)
             sondes = recup_sondes(connexion)
+            ip = recup_adresse_ip()
             connexion.close()
-            return render_template('templates/gestion_sondes.html', title='Gestion des sondes', sondes=sondes)
+            return render_template('templates/gestion_sondes.html', title='Gestion des sondes', sondes=sondes, ip=ip)
         elif request.method == "POST":
             connexion = connexion_bdd(user, host, db)
             donneesAction = {"action": request.form["action"][:6], "id":request.form["action"][6:]}
