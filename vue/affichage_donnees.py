@@ -15,8 +15,9 @@ def lancer_app():
             data = dernier_releve_par_sonde(connexion)
             alertes = recup_liste_alertes(connexion)
             util = recup_user(connexion)
+            ip = recup_adresse_ip()
             connexion.close()
-            return render_template("templates/homepage.html", title="Accueil", data=data, lesalertes=alertes, util=util)
+            return render_template("templates/homepage.html", data=data, lesalertes=alertes, util=util, ip=ip)
     
     # Récupère un nombre déterminé de relevés pour la sonde passée en paramètre
     @app.route("/releve/<idsonde>/<nbreleve>")

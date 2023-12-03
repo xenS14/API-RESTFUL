@@ -1,4 +1,4 @@
-import requests, json
+import requests, json, socket
 import mysql.connector
 import time
 from datetime import datetime, timedelta
@@ -45,6 +45,20 @@ def recup_user(conn, idUser = 1) -> str:
         "mdp_appli": record[8]
     }
     return utilisateur
+
+
+def recup_adresse_ip():
+    """
+    Récupère l'adresse ip de l'utilisateur
+
+    return: Adresse ip de l'utilisateur
+    """
+    nom_hote = socket.gethostname()
+
+    # Obtenez l'adresse IP associée au nom d'hôte
+    adresse_ip = socket.gethostbyname(nom_hote)
+
+    return adresse_ip
 
 
 def convert_hexa(hexa: str) -> int:

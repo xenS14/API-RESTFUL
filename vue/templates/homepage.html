@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/homepage.css') }}">
-    <title>{{title}}</title>
+    <title>Accueil</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="{{ url_for('static', filename='js/homepage.js') }}"></script>
 </head>
@@ -129,6 +129,6 @@
         {% endif %}
     </div>
 </body>
-<!-- <footer>
-    <h2 class="ip-adress">Adresse IP : 10.133.130.88</h2>
-</footer> -->
+<footer>
+    <h2 class="ip-adress">Adresse IP : {{ ip }}</h2>
+</footer>
