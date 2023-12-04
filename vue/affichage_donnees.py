@@ -95,8 +95,11 @@ def lancer_app():
         if request.method == "GET":
             connexion = connexion_bdd(user, host, db)
             sondes = recup_sondes(connexion)
+            util = recup_user(connexion)
+            ip = recup_adresse_ip()
+            datas = {"prenom": util["prenom"], "nom": util["nom"], "ip": ip}
             connexion.close()
-            return render_template('templates/param_alertes.html', sondes=sondes, message='')
+            return render_template('templates/param_alertes.html', sondes=sondes, message='', datas=datas)
         elif request.method == "POST":
             tabDonnees = [request.form["seuil"], request.form["freq"], request.form["type"], request.form["sens"], request.form["sonde"]]
             if tabDonnees[0] == '' or tabDonnees[1] == '':

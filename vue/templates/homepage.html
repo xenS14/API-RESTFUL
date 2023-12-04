@@ -71,39 +71,41 @@
     </div>
     <div class="graph-container">
         <div class="graph-buttons">
-            <button id="temp-btn" onclick="afficherGraphique('temperature', document.querySelector('input[name=sonde]:checked').value, document.querySelector('input[name=qte]:checked').value)">Température</button>
-            <button id="hum-btn" onclick="afficherGraphique('humidite', document.querySelector('input[name=sonde]:checked').value, document.querySelector('input[name=qte]:checked').value)">Humidité</button>
-            <button id="histo-btn" onclick="afficherHistorique(document.querySelector('input[name=sonde]:checked').value, document.querySelector('input[name=qte]:checked').value)">Historique</button>
+            <button id="temp-btn"
+                onclick="afficherGraphique('temperature', document.querySelector('input[name=sonde]:checked').value, document.querySelector('input[name=qte]:checked').value)">Température</button>
+            <button id="hum-btn"
+                onclick="afficherGraphique('humidite', document.querySelector('input[name=sonde]:checked').value, document.querySelector('input[name=qte]:checked').value)">Humidité</button>
+            <button id="histo-btn"
+                onclick="afficherHistorique(document.querySelector('input[name=sonde]:checked').value, document.querySelector('input[name=qte]:checked').value)">Historique</button>
             <fieldset>
                 <legend>Sélectionnez une sonde :</legend>
                 <div id="select-sensor">
-                {% for i in range(sondes|length) %}
-                {% if i == 0 %}
-                <input type="radio" id={{ sondes[i].nom }} name="sonde" value={{ sondes[i].id }} checked>
-                {% else %}
-                <input type="radio" id={{ sondes[i].nom }} name="sonde" value={{ sondes[i].id }}>
-                {% endif %}
-                <label for={{ sondes[i].nom }}>{{ sondes[i].nom }}</label>
-                {% endfor %}
+                    {% for i in range(sondes|length) %}
+                    {% if i == 0 %}
+                    <input type="radio" id={{ sondes[i].nom }} name="sonde" value={{ sondes[i].id }} checked>
+                    {% else %}
+                    <input type="radio" id={{ sondes[i].nom }} name="sonde" value={{ sondes[i].id }}>
+                    {% endif %}
+                    <label for={{ sondes[i].nom }}>{{ sondes[i].nom }}</label>
+                    {% endfor %}
                 </div>
-              </fieldset>
-              <fieldset>
+            </fieldset>
+            <fieldset>
                 <legend>Nombre de valeurs souhaité :</legend>
                 <div id="select-valeur">
-                <input type="radio" id="5" name="qte" value="5" checked>
-                <label for="5">5</label>
-                <input type="radio" id="15" name="qte" value="15">
-                <label for="15">15</label>
-                <input type="radio" id="30" name="qte" value="30">
-                <label for="30">30</label>
-                <input type="radio" id="50" name="qte" value="50">
-                <label for="50">50</label>
+                    <input type="radio" id="5" name="qte" value="5" checked>
+                    <label for="5">5</label>
+                    <input type="radio" id="15" name="qte" value="15">
+                    <label for="15">15</label>
+                    <input type="radio" id="30" name="qte" value="30">
+                    <label for="30">30</label>
+                    <input type="radio" id="50" name="qte" value="50">
+                    <label for="50">50</label>
                 </div>
-              </fieldset>
+            </fieldset>
         </div>
         <div id="monChart"></div>
     </div>
-        
     <h1 class="map-title">Mes alertes :</h1>
     <div class="alerte-container">
         <div class="alert-buttons">
